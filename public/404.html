@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - not found</title>
+</head>
+<body>
+    <style>
+        :root{
+            --bg: #f8f9fa;
+            --text: #222;
+            --subtext: #888;
+            --card-bg: #fff;
+            --border: #ddd;
+            --link: #007bff;
+            --link-hover: #0056b3;
+        }
+        *{
+            font-family: Poppins;
+            overflow: hidden;
+            color: var(--text);
+        }
+        .headline{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .headline img{
+            width: 400px;
+            aspect-ratio: 1 / 1 ;
+        }
+        footer{
+            position: fixed;
+            right: 50%;
+            bottom: 1rem;
+            transform: translate(50%, 12px);
+            z-index: 40;
+        }
+        footer p {
+            font-size: 0.7rem;
+            color: #888;
+            text-align: center;
+            font-family: 'Poppins', 'Arial', sans-serif;
+        }
+
+        @media (max-width:425px) {
+            .headline{
+                font-size: small;
+            }
+            footer p{
+                font-size: 0.6rem;
+            }
+        }
+        @media (max-width:425px) {
+            .headline img{
+                width: 250px;
+            }
+        }
+        @media (max-height:424px) {
+            .headline img{
+                display: none;
+            }
+        }
+
+    </style>
+    <div class="headline">
+        <img src="./assets/images/404.webp" alt="">
+        <h1>404 NOT FOUND</h1>
+        <p>The page you are looking for cannot be found. It may have been <strong> moved, removed, or is under development.</strong></p>
+    </div>
+<footer>
+  <p id="footer-text"></p>
+</footer>
+
+<script>
+  const startYear = 2025; // Year the website started
+  const currentYear = new Date().getFullYear();
+  const yearsActive = currentYear - startYear;
+
+  let yearText = startYear;
+  if (yearsActive > 0) {
+    yearText += ` - ${currentYear}`;
+  }
+
+  let yearsOnlineText = '';
+  if (yearsActive > 0) {
+    yearsOnlineText = ` | ${yearsActive} year${yearsActive > 1 ? 's' : ''} online`;
+  }
+
+  document.getElementById('footer-text').innerHTML =
+    `© ${yearText} - <a href="http://chemithasathsilu.onrender.com">Chemitha Sathsilu</a>${yearsOnlineText}`;
+</script>
+
+    
+</body>
+</html>

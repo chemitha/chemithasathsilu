@@ -176,6 +176,57 @@ Currently exploring → AI Engineering">
 
       <!-- Project Grid -->
       <div id="magic-bento-projects" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- project: My Showcase -->
+        <article
+          class="project-card group relative p-6 md:p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl reveal-on-scroll">
+          <!-- Hover Background Effect -->
+          <div
+            class="absolute inset-0 opacity-0 group-hover:opacity-50 transition-opacity duration-500 bg-gradient-to-br from-blue-500/30 to-purple-500/30">
+            <div class="flex justify-center items-center w-full h-full">
+              <img class="transition-all duration-500 max-w-[105.5%] mx-auto"
+                src=""
+                alt="" rel="perload" decoding="async" loading="lazy" style="display: block;">
+            </div>
+            <style>
+              @media (max-width: 767px) {
+                .project-card:hover img {
+                  transform: scale(2);
+                }
+
+                .project-card img {
+                  transition: transform 0.5s cubic-bezier(.25, 1, .5, 1);
+                }
+              }
+            </style>
+          </div>
+
+          <!-- Card Content -->
+          <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-4">
+              <h3 class="text-2xl font-bold">My Lab Showcase</h3>
+            </div>
+
+            <p class="text-whitesmoke/80 mb-6 leading-relaxed text-sm md:text-base">
+              <i>A collection of my side projects, experiments, and thoughts:</i> a glimpse into what I create, explore, and learn along the way.
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm">Projects</span>
+              <span class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm">Experiments</span>
+              <span class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm">Thoughts</span>
+              <span class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm"><i class="fa-solid fa-star-half-stroke"></i> Fun</span>
+            </div>
+
+            <div class="flex gap-3">
+              <!-- Project links -->
+              <a href="./showcase.html"
+                class="glare-hover px-4 py-2 rounded-lg border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all text-sm md:text-base">
+                Visit Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+          </div>
+        </article>
+        
 
         <!-- Project: AutoNin -->
         <article
@@ -231,9 +282,9 @@ Currently exploring → AI Engineering">
 
             <div class="flex gap-3">
               <!-- Project links -->
-              <a href="https://autonin.onrender.com"
+              <a href="https://autonin.onrender.com" target="_blank"
                 class="glare-hover px-4 py-2 rounded-lg border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all text-sm md:text-base">
-                Live Demo
+                Live Demo <i class="fa-solid fa-arrow-up-right-from-square"></i>
               </a>
               <a href="https://github.com/Sevenplx/AutoNin" target="_blank"
                 class="glare-hover px-4 py-2 rounded-lg border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all text-sm md:text-base flex items-center gap-2">
