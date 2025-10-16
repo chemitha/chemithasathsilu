@@ -1,0 +1,13 @@
+#magic-bento-skills > div::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--glow-x,50%) var(--glow-y,50%), rgba(132,0,255, calc(var(--glow-intensity,0) * 0.35)) 0%, transparent 65%);
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  opacity: var(--glow-intensity,0);
+}
+#magic-bento-skills > div:hover::before {
+  opacity: 1 !important;
+}
