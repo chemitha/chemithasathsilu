@@ -1,11 +1,11 @@
-# Use an official Nginx image as the base image
 FROM nginx:alpine
 
-# Copy the contents of the public folder to the Nginx HTML directory
+# Copy your static files
 COPY public /usr/share/nginx/html
 
-# Expose port 80 for the web server
+# Copy the custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 
-# Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
