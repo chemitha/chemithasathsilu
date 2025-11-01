@@ -1,0 +1,14 @@
+services:
+  - type: static
+    name: chemithasathsilu
+    repo: https://github.com/Sevenplx/chemithasathsilu
+    branch: main
+    buildCommand: ""
+    publishPath: public
+    redirects:
+      - from: /showcase
+        to: /showcase.html
+        status: 200
+      - from: /404
+        to: /404.html
+        status: 404
