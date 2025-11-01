@@ -1,0 +1,14 @@
+{
+  "name": "chemithasathsilu",
+  "version": "1.0.0",
+  "description": "Chemitha's portfolio website",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo 'No build step configured'"
+  },
+  "keywords": [],
+  "author": "Sevenplx",
+  "license": "MIT",
+  "dependencies": {}
+}
