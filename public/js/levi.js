@@ -17,8 +17,8 @@
     "Just do the best you can and choose whichever you'll regret the least."
   ];
 
-  const BLADE_SRC_1 = "./sword-slice-2-393845.mp3";
-  const BLADE_SRC_2 = "./sword-slice-2-393845.mp3";
+  const BLADE_SRC_1 = "./js/sword-slice-2-393845.mp3";
+  const BLADE_SRC_2 = "./js/sword-slice-2-393845.mp3";
 
   let seq = "";               // typed sequence buffer
   let isActive = false;       // prevent overlapping Levi modes
