@@ -1,7 +1,7 @@
 services:
   - type: static
     name: chemithasathsilu
-    repo: https://github.com/Sevenplx/chemithasathsilu
+    repo: https://github.com/chemitha/chemithasathsilu
     branch: main
     buildCommand: ""
     publishPath: public
