@@ -5,7 +5,7 @@
 
       skills.forEach((skill, index) => {
         const card = document.createElement('div');
-        card.className = 'skill-item skill-card relative p-4 md:p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-lg hover:border-white/20 flex flex-col justify-center items-center';
+        card.className = 'skill-item skill-card relative p-4 md:p-6 rounded-[2vh] bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-lg hover:border-white/20 flex flex-col justify-center items-center';
 
         card.innerHTML = `
           <div class="flex flex-col items-center gap-2 md:gap-4 h-full justify-center">
