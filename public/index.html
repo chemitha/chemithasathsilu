@@ -31,8 +31,10 @@
   <!-- Font Awesome Free -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Devicon -->
-     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+  <!-- Devicon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+    <!-- Tippy.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light.css"/>
   <!-- Tailwind (CDN - quick prototyping) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./css/styles.css" />
@@ -429,6 +431,84 @@
           </div>
         </article>
 
+        <!-- Project: AtticNote -->
+        <article
+          class="project-card group relative p-6 md:p-8 rounded-[2vh] bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl reveal-on-scroll">
+
+          <!-- Hover Background Effect -->
+          <div
+            class="absolute inset-0 opacity-0 group-hover:opacity-50 transition-opacity duration-500 bg-gradient-to-br from-blue-500/30 to-purple-500/30">
+            
+            <div class="flex justify-center items-center w-full h-full">
+              <img
+                class="transition-all duration-500 max-w-[120%] translate-x-12 mx-auto"
+                src="./assets/images/thum/atticnote.webp"
+                alt="AtticNote workspace interface preview"
+                decoding="async"
+                loading="lazy"
+                style="display: block;">
+            </div>
+
+            <style>
+              @media (max-width: 767px) { 
+                .project-card:hover img {
+                  transform: scale(2);
+                }
+
+                .project-card img {
+                  transition: transform 0.5s cubic-bezier(.25, 1, .5, 1);
+                }
+              }
+            </style>
+          </div>
+
+          <!-- Card Content -->
+          <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-4">
+              <h3 class="text-2xl font-bold">AtticNote</h3>
+            </div>
+
+            <p class="text-whitesmoke/80 mb-6 leading-relaxed text-sm md:text-base">
+              A lightweight workspace for capturing notes, ideas, and files from anywhere. Designed for fast access across school PCs, shared computers, and everyday devices.
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span
+                class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm flex items-center gap-1">
+                <i class="fa-solid fa-code"></i> Next.js
+              </span>
+
+              <span
+                class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm flex items-center gap-1">
+                <i class="devicon-tailwindcss-plain"></i> Tailwind
+              </span>
+
+              <span
+                class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm flex items-center gap-1">
+                <i class="fa-solid fa-cloud"></i> Cloud Workspace
+              </span>
+
+              <span
+                class="px-3 py-1 rounded-md text-xs md:text-sm bg-white/10 backdrop-blur-sm flex items-center gap-1">
+                <i class="fa-solid fa-circle-nodes"></i> Integrations
+              </span>
+            </div>
+
+            <div class="flex gap-3">
+              <!-- Project links -->
+              <a href="https://atticnote.vercel.app" target="_blank"
+                class="glare-hover px-4 py-2 rounded-lg border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all text-sm md:text-base">
+                Launch App <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+
+              <a href="https://github.com/chemitha/atticnotes" target="_blank"
+                class="glare-hover px-4 py-2 rounded-lg border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all text-sm md:text-base">
+                View on GitHub <i class="fab fa-github"></i>
+              </a>
+            </div>
+          </div>
+        </article>
+
         <!-- Project: Coming Soon -->
         <!-- <article
           class="project-card relative p-6 md:p-8 rounded-[2vh] bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden cursor-default transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl reveal-on-scroll">
@@ -514,21 +594,62 @@
   <br>
   <script src="./js/contact-animation.js"></script>
 
-  <!-- FOOTER -->
-  <footer class="py-10 border-t border-white/10">
-    <div class="max-w-6xl mx-auto px-6 text-center text-sm text-white/50">
-      <p>© <span id="year"></span> Chemitha Sathsilu. All rights reserved</p>
+<!-- FOOTER -->
+<footer class="py-10 border-t border-white/10">
+  <div class="flex justify-between items-center">
+
+    <div class="max-w-6xl mx-auto px-6 text-center text-sm text-white/50" data-tippy-content="Yuvindi Nimna 🤍">
+      <p>© <span id="year" ></span> Chemitha Sathsilu. All rights reserved</p>
     </div>
-  </footer>
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
 
-  <!-- Back to Top Button -->
-  <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-    <i class="fas fa-arrow-up"></i>
-  </button>
+    <div class="flex gap-4 max-w-6xl mx-auto px-6 text-center text-sm text-white/50">
 
-  <script src="./js/magic-bento.js"></script>
+    <span>
+      <a href="./sitemap.xml"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-blue-500 hover:underline"
+        data-tippy-content="View Sitemap">
+        <i class="fa-solid fa-rss"></i>
+      </a>
+    </span>
+
+    <span>
+      <a href="https://github.com/chemitha/chemithasathsilu"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-blue-500 hover:underline"
+        data-tippy-content="Fork the Project">
+        <i class="fab fa-github"></i>
+      </a>
+    </span>
+
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop"
+        onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
+<script src="./js/magic-bento.js"></script>
+
+<!-- Popper + Tippy -->
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script>
+  tippy('[data-tippy-content]', {
+    theme: 'dark',
+    animation: 'fade',
+    placement: 'top',
+  });
+</script>
+
 </body>
 </html>
