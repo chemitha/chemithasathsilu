@@ -16,6 +16,12 @@
   <!-- <link rel="stylesheet" href="levi.css" /> -->
   <script defer src="./js/showcase.js"></script>
   <script src="./js/levi.js"></script>
+  // Targeting the old onrender domain to redirect to custom domain
+  <script>
+    if (window.location.hostname === "chemithasathsilu.onrender.com") {
+      window.location.replace("https://chemitha.com" + window.location.pathname + window.location.search);
+    }
+  </script>
 </head>
 <body>
   <header class="header">
