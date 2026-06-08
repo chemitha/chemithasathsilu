@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://chemithasathsilu.onrender.com/sitemap.xml
+Sitemap: https://chemitha.com/sitemap.xml

@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - not found</title>
     <!-- Targeting the old onrender domain to redirect to custom domain -->
-    <script>
-      if (window.location.hostname === "chemithasathsilu.onrender.com") {
-        window.location.replace("https://chemitha.com" + window.location.pathname + window.location.search);
-      }
-    </script>
+    <script src="./js/domain-fallback.js"></script>
 </head>
 <body>
     <style>
@@ -98,7 +94,7 @@
   }
 
   document.getElementById('footer-text').innerHTML =
-    `© ${yearText} - <a href="http://chemithasathsilu.onrender.com">Chemitha Sathsilu</a>${yearsOnlineText}`;
+    `© ${yearText} - <a href="http://chemitha.com">Chemitha Sathsilu</a>${yearsOnlineText}`;
 </script>
 
     
