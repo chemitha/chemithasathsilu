@@ -6,14 +6,6 @@ services:
     buildCommand: ""
     publishPath: public
     redirects:
-      # 1. Redirect old onrender domain to your custom domain (with 301)
-      - from: http://chemithasathsilu.onrender.com/*
-        to: https://chemitha.com/*
-        status: 301
-      - from: https://chemithasathsilu.onrender.com/*
-        to: https://chemitha.com/*
-        status: 301
-
       - from: /showcase
         to: /showcase.html
         status: 200
