@@ -1,6 +1,3 @@
-// levi.js
-// Place this in /public/showcase/levi.js and include with <script src="/showcase/levi.js"></script>
-
 (function () {
   // ---------------------------
   // Configuration
