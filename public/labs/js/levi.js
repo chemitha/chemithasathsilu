@@ -76,7 +76,7 @@ body.levi-active .header h1 {
   width: 100%;
   height: 120%;
   bottom: -120%;
-  background: url("https://images5.alphacoders.com/606/thumb-1920-606225.jpg") center/cover no-repeat;
+  background: url("https://chemitha.com/assets/images/thumb-1920-606225.jpg") center/cover no-repeat;
   z-index: 10005;
   opacity: 0.58;
   transition: bottom ${BG_RISE_DURATION}ms cubic-bezier(.2,.9,.2,1);
@@ -89,7 +89,7 @@ body.levi-active .header h1 {
 
 @media (max-width: 600px) {
   .levi-bg {
-    background: url("https://www.comingsoon.net/wp-content/uploads/sites/3/2024/06/attack-on-titan-walls-height.png") center/cover no-repeat;
+    background: url("https://chemitha.com/assets/images/attack-on-titan-walls-height.png") center/cover no-repeat;
   }
 }
 
