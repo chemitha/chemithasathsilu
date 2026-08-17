@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+*, body, a, button {
+  cursor: auto !important;
+}
+
+@media (min-width: 768px) {
+  *, body, a, button {
+    cursor: none !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ededed;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #ededed70;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #ededed;
+  border-radius: 6px;
+}
+
+::selection {
+  background-color: #649aff52;
+  color: #ededed;
+}
+
+/* Contact Badge Highlight Animation */
+@keyframes contact-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+  }
+  30% {
+    transform: scale(1.15);
+    border-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 25px 4px rgba(255, 255, 255, 0.35);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
+  }
+  60% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    filter: drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+  }
+}
+
+#contact.is-highlighted a {
+  animation: contact-pop 900ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
