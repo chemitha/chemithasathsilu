@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
   { label: "Projects", href: "#projects" },
-  { label: "Labs", href: "/labs" },
+  { label: "Labs", href: "https://labs.chemitha.com" },
   { label: "Contact", href: "#contact" },
 ];
 

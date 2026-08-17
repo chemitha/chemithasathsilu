@@ -14,7 +14,7 @@ interface DynamicNavbarProps {
 const NAV_LINKS = [
   { name: "About", href: "#about" },
   { name: "Projects", href: "#projects" },
-  { name: "Labs", href: "/labs" },
+  { name: "Labs", href: "https://labs.chemitha.com" },
   { name: "Contact", href: "#contact" },
 ];
 
