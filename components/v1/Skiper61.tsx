@@ -1,14 +1,15 @@
 "use client";
 
-// TODO create a how to collection and plce it in them
+// TODO create a how to collection and place it in them
 
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import React, { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const SPRING = {
-  mass: 0.1, // avoid Controls inertia (how sluggish or responsive the object feels). Lower mass = snappier motion; higher mass = lethargic motion
-  damping: 10, // its like the weight of the ball heavier the ball less it will bounce or harder the rubber band the more it will bounce
-  stiffness: 151, // like rubber Band the more you strech the more speed it goes back to the original position
+  mass: 0.1, // avoid Controls inertia. Lower mass = snappier motion
+  damping: 10, // bounce weight control
+  stiffness: 151, // rubber band tension speed
 };
 
 const SimpleMouseFollow = () => {
@@ -40,7 +41,7 @@ const SimpleMouseFollow = () => {
           x,
           y,
           opacity,
-        }}
+        } as any}
         className="rounded-4xl size-5 bg-[#ccc]"
       ></motion.div>
     </div>
@@ -76,7 +77,7 @@ const SpringMouseFollow = () => {
           y: ySpring,
           opacity: opacitySpring,
           scale: scaleSpring,
-        }}
+        } as any}
         className="rounded-4xl size-5 bg-white hidden md:block"
       ></motion.div>
     </div>
@@ -84,11 +85,16 @@ const SpringMouseFollow = () => {
 };
 
 export const SimpleGlobalCursor = () => {
+  const pathname = usePathname();
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
   const opacity = useMotionValue(0);
 
+  const isShowcaseRoute = pathname?.startsWith('/app') || pathname?.startsWith('/showcase');
+
   useEffect(() => {
+    if (isShowcaseRoute) return;
+
     const handlePointerMove = (e: PointerEvent) => {
       x.set(e.clientX);
       y.set(e.clientY);
@@ -115,7 +121,9 @@ export const SimpleGlobalCursor = () => {
       document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
       document.documentElement.removeEventListener("mouseenter", handleMouseEnter);
     };
-  }, [x, y, opacity]);
+  }, [x, y, opacity, isShowcaseRoute]);
+
+  if (isShowcaseRoute) return null;
 
   return (
     <motion.div
@@ -123,19 +131,24 @@ export const SimpleGlobalCursor = () => {
         x,
         y,
         opacity,
-      }}
+      } as any}
       className="!z-99 pointer-events-none fixed top-0 left-0 z-50 hidden size-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference md:block"
     />
   );
 };
 
 export const SpringGlobalCursor = () => {
+  const pathname = usePathname();
   const xSpring = useSpring(-100, SPRING);
   const ySpring = useSpring(-100, SPRING);
   const opacitySpring = useSpring(0, SPRING);
   const scaleSpring = useSpring(0, SPRING);
 
+  const isShowcaseRoute = pathname?.startsWith('/app') || pathname?.startsWith('/showcase');
+
   useEffect(() => {
+    if (isShowcaseRoute) return;
+
     const handlePointerMove = (e: PointerEvent) => {
       xSpring.set(e.clientX);
       ySpring.set(e.clientY);
@@ -145,13 +158,11 @@ export const SpringGlobalCursor = () => {
         scaleSpring.set(1);
       }
 
-      // Check if hovered element or its parent is interactive
       const target = e.target as HTMLElement | null;
       const isHoveredPointer = target?.closest(
         'a, button, [role="button"], input, select, textarea, [data-cursor="pointer"]'
       );
 
-      // Scale up cursor on hover (e.g., 2.5x size)
       if (isHoveredPointer) {
         scaleSpring.set(2.5);
       } else {
@@ -178,7 +189,9 @@ export const SpringGlobalCursor = () => {
       document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
       document.documentElement.removeEventListener("mouseenter", handleMouseEnter);
     };
-  }, [xSpring, ySpring, opacitySpring, scaleSpring]);
+  }, [xSpring, ySpring, opacitySpring, scaleSpring, isShowcaseRoute]);
+
+  if (isShowcaseRoute) return null;
 
   return (
     <motion.div
@@ -187,7 +200,7 @@ export const SpringGlobalCursor = () => {
         y: ySpring,
         opacity: opacitySpring,
         scale: scaleSpring,
-      }}
+      } as any}
       className="pointer-events-none fixed top-0 left-0 z-[9999] hidden size-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference md:block"
     />
   );

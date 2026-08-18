@@ -20,7 +20,7 @@ export interface SplitTextProps {
   threshold?: number;
   rootMargin?: string;
   tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
-  textAlign?: React.CSSProperties['textAlign'];
+  textAlign?: 'left' | 'right' | 'center' | 'justify' | 'initial' | 'inherit';
   onLetterAnimationComplete?: () => void;
 }
 
@@ -50,28 +50,22 @@ const SplitText: React.FC<SplitTextProps> = ({
   }, [onLetterAnimationComplete]);
 
   useEffect(() => {
-    if (document.fonts.status === 'loaded') {
-      setFontsLoaded(true);
+    if (document.fonts) {
+      document.fonts.ready.then(() => setFontsLoaded(true));
     } else {
-      document.fonts.ready.then(() => {
-        setFontsLoaded(true);
-      });
+      setFontsLoaded(true);
     }
   }, []);
 
   useGSAP(
     () => {
-      if (!ref.current || !text || !fontsLoaded) return;
-      if (animationCompletedRef.current) return;
+      if (!ref.current || !fontsLoaded) return;
 
       const el = ref.current as HTMLElement & {
         _rbsplitInstance?: GSAPSplitText;
       };
-
       if (el._rbsplitInstance) {
-        try {
-          el._rbsplitInstance.revert();
-        } catch (_) {}
+        el._rbsplitInstance.revert();
         el._rbsplitInstance = undefined;
       }
 
@@ -86,30 +80,33 @@ const SplitText: React.FC<SplitTextProps> = ({
         marginValue === 0
           ? ''
           : marginValue < 0
-            ? `-=${Math.abs(marginValue)}${marginUnit}`
-            : `+=${marginValue}${marginUnit}`;
+          ? `-=${Math.abs(marginValue)}${marginUnit}`
+          : `+=${marginValue}${marginUnit}`;
       const start = `top ${startPct}%${sign}`;
-      let targets: Element[] = [];
 
       const assignTargets = (self: GSAPSplitText) => {
-        if (splitType.includes('chars') && (self as GSAPSplitText).chars?.length)
-          targets = (self as GSAPSplitText).chars;
-        if (!targets.length && splitType.includes('words') && self.words.length) targets = self.words;
-        if (!targets.length && splitType.includes('lines') && self.lines.length) targets = self.lines;
-        if (!targets.length) targets = self.chars || self.words || self.lines;
+        let targets: HTMLElement[] = [];
+        if (splitType.includes('chars')) {
+          targets = self.chars as HTMLElement[];
+        } else if (splitType.includes('words')) {
+          targets = self.words as HTMLElement[];
+        } else if (splitType.includes('lines')) {
+          targets = self.lines as HTMLElement[];
+        } else {
+          targets = self.chars as HTMLElement[];
+        }
+        return targets;
       };
 
       const splitInstance = new GSAPSplitText(el, {
         type: splitType,
-        smartWrap: true,
-        autoSplit: splitType === 'lines',
         linesClass: 'split-line',
         wordsClass: 'split-word',
         charsClass: 'split-char',
         reduceWhiteSpace: false,
         onSplit: (self: GSAPSplitText) => {
-          assignTargets(self);
-          setIsReady(true); // Unhide wrapper safely right when animation fires
+          setIsReady(true);
+          const targets = assignTargets(self);
           return gsap.fromTo(
             targets,
             { ...from },
@@ -124,14 +121,15 @@ const SplitText: React.FC<SplitTextProps> = ({
                 start,
                 once: true,
                 fastScrollEnd: true,
-                anticipatePin: 0.4
-              },
-              onComplete: () => {
-                animationCompletedRef.current = true;
-                onCompleteRef.current?.();
-              },
-              willChange: 'transform, opacity',
-              force3D: true
+                onEnter: () => {
+                  if (!animationCompletedRef.current) {
+                    animationCompletedRef.current = true;
+                    if (onCompleteRef.current) {
+                      onCompleteRef.current();
+                    }
+                  }
+                }
+              }
             }
           );
         }
@@ -144,10 +142,10 @@ const SplitText: React.FC<SplitTextProps> = ({
         ScrollTrigger.getAll().forEach(st => {
           if (st.trigger === el) st.kill();
         });
-        try {
-          splitInstance.revert();
-        } catch (_) {}
-        el._rbsplitInstance = undefined;
+        if (el._rbsplitInstance) {
+          el._rbsplitInstance.revert();
+          el._rbsplitInstance = undefined;
+        }
       };
     },
     {
@@ -168,7 +166,7 @@ const SplitText: React.FC<SplitTextProps> = ({
   );
 
   const style: React.CSSProperties = {
-    textAlign,
+    textAlign: textAlign as any,
     wordWrap: 'break-word',
     willChange: 'transform, opacity'
   };

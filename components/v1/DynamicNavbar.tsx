@@ -147,7 +147,7 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
             WebkitBackdropFilter: "blur(40px)",
             borderRadius: "100px",
             borderColor: "rgba(234, 237, 240, 0.08)",
-          }}
+          } as React.CSSProperties}
           className="relative flex h-[72px] w-full items-center justify-between border border-solid box-border"
         >
           <a href="#" className="flex items-center shrink-0">
@@ -213,7 +213,7 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
                 backdropFilter: "blur(24px)",
                 WebkitBackdropFilter: "blur(24px)",
                 borderColor: "rgba(234, 237, 240, 0.08)",
-              }}
+              } as React.CSSProperties}
               className="w-full max-w-[1200px] mt-2 rounded-2xl p-5 border shadow-2xl flex flex-col gap-4 md:hidden z-50"
             >
               {NAV_LINKS.map((link) =>

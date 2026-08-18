@@ -1,0 +1,53 @@
+.levi-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.5s ease;
+}
+
+.levi-image {
+  width: 100%;
+  height: auto;
+  max-height: 100vh;
+  object-fit: cover;
+  transition: transform 1.5s ease;
+}
+
+.levi-text {
+  position: absolute;
+  text-align: center;
+  color: white;
+  z-index: 5;
+  pointer-events: none;
+  transition: all 1s ease;
+}
+
+.levi-text h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.levi-text p {
+  font-size: 1.2rem;
+  margin-top: 10px;
+}
+
+/* Blur background only, not text */
+.levi-container:hover .levi-image {
+  filter: blur(3px) brightness(0.7);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .levi-text h1 {
+    font-size: 1.8rem;
+  }
+  .levi-text p {
+    font-size: 1rem;
+  }
+}

@@ -9,10 +9,10 @@ interface TiltedCardProps {
   imageSrc: React.ComponentProps<'img'>['src'];
   altText?: string;
   captionText?: string;
-  containerHeight?: React.CSSProperties['height'];
-  containerWidth?: React.CSSProperties['width'];
-  imageHeight?: React.CSSProperties['height'];
-  imageWidth?: React.CSSProperties['width'];
+  containerHeight?: string | number;
+  containerWidth?: string | number;
+  imageHeight?: string | number;
+  imageWidth?: string | number;
   scaleOnHover?: number;
   rotateAmplitude?: number;
   showMobileWarning?: boolean;
@@ -141,7 +141,7 @@ export default function TiltedCard({
           rotateX,
           rotateY,
           scale
-        }}
+        } as any}
       >
         <motion.img
           src={imageSrc}
@@ -150,7 +150,7 @@ export default function TiltedCard({
           style={{
             width: imageWidth,
             height: imageHeight
-          }}
+          } as any}
         />
 
         {displayOverlayContent && overlayContent && (
@@ -168,7 +168,7 @@ export default function TiltedCard({
             y,
             opacity,
             rotate: rotateFigcaption
-          }}
+          } as any}
         >
           {captionText}
         </motion.figcaption>

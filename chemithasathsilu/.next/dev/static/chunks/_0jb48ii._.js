@@ -521,7 +521,7 @@ const NAV_LINKS = [
     },
     {
         name: "Labs",
-        href: "/labs"
+        href: "https://labs.chemitha.com"
     },
     {
         name: "Contact",
@@ -1232,7 +1232,7 @@ const NAV_LINKS = [
     },
     {
         label: "Labs",
-        href: "/labs"
+        href: "https://labs.chemitha.com"
     },
     {
         label: "Contact",
