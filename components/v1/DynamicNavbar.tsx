@@ -150,7 +150,12 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
           } as React.CSSProperties}
           className="relative flex h-[72px] w-full items-center justify-between border border-solid box-border"
         >
-          <a href="#" className="flex items-center shrink-0">
+          <a href="/"
+          onClick={e=>{
+            e.preventDefault()
+            const scrollContainer = document.querySelector(".overflow-y-scroll") || window;
+            scrollContainer.scrollTo({top:0,behavior:"smooth"})
+          }} className="flex items-center shrink-0">
             <div className="flex h-13 w-13 items-center justify-center rounded-full bg-[#f1f0f5] p-2">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
