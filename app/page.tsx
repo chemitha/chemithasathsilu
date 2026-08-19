@@ -48,8 +48,7 @@ const techLogos = [
 
 export default function Home() {
   return (
-    
-    <div className="h-screen w-full overflow-y-scroll md:snap-y md:snap-mandatory scroll-smooth font-sans overflow-x-hidden">
+    <div className="h-[100dvh] w-full overflow-y-scroll md:snap-y md:snap-mandatory scroll-smooth font-sans overflow-x-hidden">
       <Preloader />
       <SeamlessVideoWithHalftone />
 
@@ -60,7 +59,7 @@ export default function Home() {
 
       <section 
         id="hero" 
-        className="relative flex h-screen w-full flex-col justify-end items-center pb-8 px-4 pointer-events-none snap-start shrink-0"
+        className="relative flex h-[100dvh] w-full flex-col justify-end items-center pt-24 pb-16 px-4 pointer-events-none snap-start shrink-0"
       >
         <div
           id="navbar-trigger"
