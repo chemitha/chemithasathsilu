@@ -6,6 +6,8 @@ import SplitText from "@/components/v1/SplitText";
 import { SeamlessVideoWithHalftone } from "@/components/v1/SeamlessVideo";
 import TiltedCard from "@/components/v1/TiltedCard";
 import LogoLoop from "@/components/v1/LogoLoop";
+import { Preloader } from "@/components/v1/Preloader";
+
 import {
   SiReact,
   SiNextdotjs,
@@ -46,7 +48,9 @@ const techLogos = [
 
 export default function Home() {
   return (
+    
     <div className="h-screen w-full overflow-y-scroll md:snap-y md:snap-mandatory scroll-smooth font-sans overflow-x-hidden">
+      <Preloader />
       <SeamlessVideoWithHalftone />
 
       <DynamicNavbar triggerId="navbar-trigger" />

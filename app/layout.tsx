@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpringGlobalCursor } from "@/components/v1/Skiper61";
 import { SeamlessVideoBackground } from "@/components/v1/SeamlessVideo";
-import { Preloader } from "@/components/v1/Preloader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,7 +45,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col bg-black">
-        <Preloader />
         <SeamlessVideoBackground />
         <SpringGlobalCursor />
         {children}

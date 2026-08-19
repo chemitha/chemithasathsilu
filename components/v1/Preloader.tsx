@@ -12,58 +12,56 @@ export const Preloader: React.FC = () => {
     if (typeof window === "undefined") return;
 
     // --- TIMING CONFIGURATION (ms) ---
-    const SIMULATED_SPEED = 25;
-    const HOLD_DELAY = 300;
-    const FINAL_STEP_SPEED = 15;
-    const EXIT_DELAY = 200;
-    const SAFETY_TIMEOUT = 5000;
+    const SIMULATED_SPEED = 20; // Speed from 0% to 90%
+    const FINAL_STEP_SPEED = 12; // Speed from 90% to 100%
+    const EXIT_DELAY = 250; // Pause at 100% before exit animation
+    const SAFETY_TIMEOUT = 4000; // Force load if window load hangs
 
-    let isLoaded = document.readyState === "complete";
-    let isHolding = false;
+    let isRealLoadComplete = document.readyState === "complete";
     let timer: NodeJS.Timeout;
-    let currentProgress = 0;
+    let current = 0;
 
     const handleLoad = () => {
-      isLoaded = true;
+      isRealLoadComplete = true;
     };
 
-    if (!isLoaded) {
+    if (!isRealLoadComplete) {
       window.addEventListener("load", handleLoad, { once: true });
     }
 
     const fallbackTimer = setTimeout(() => {
-      isLoaded = true;
+      isRealLoadComplete = true;
     }, SAFETY_TIMEOUT);
 
-    const tick = () => {
-      if (currentProgress >= 100) {
-        setTimeout(() => setIsLoading(false), EXIT_DELAY);
+    const step = () => {
+      // 1. Reached 100% -> Trigger exit
+      if (current >= 100) {
+        timer = setTimeout(() => setIsLoading(false), EXIT_DELAY);
         return;
       }
 
-      if (!isLoaded) {
-        if (currentProgress < 90) {
-          currentProgress += 1;
-          setProgress(currentProgress);
-          timer = setTimeout(tick, SIMULATED_SPEED);
-        } else {
-          timer = setTimeout(tick, 50);
-        }
+      // 2. Phase 1: 0% to 90% (Always animates immediately on mount)
+      if (current < 90) {
+        current += 1;
+        setProgress(current);
+        timer = setTimeout(step, SIMULATED_SPEED);
         return;
       }
 
-      if (!isHolding) {
-        isHolding = true;
-        timer = setTimeout(tick, HOLD_DELAY);
+      // 3. Phase 2: Stalled at 90% waiting for actual window/asset load
+      if (!isRealLoadComplete) {
+        timer = setTimeout(step, 50); // Poll every 50ms until loaded
         return;
       }
 
-      currentProgress += 1;
-      setProgress(currentProgress);
-      timer = setTimeout(tick, FINAL_STEP_SPEED);
+      // 4. Phase 3: 90% to 100% (Once real loading completes)
+      current += 1;
+      setProgress(current);
+      timer = setTimeout(step, FINAL_STEP_SPEED);
     };
 
-    tick();
+    // Kick off animation sequence immediately
+    step();
 
     return () => {
       clearTimeout(timer);
@@ -83,7 +81,7 @@ export const Preloader: React.FC = () => {
             opacity: 0.9,
             transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
           }}
-          className="fixed inset-0 z-[9999] flex flex-col justify-between p-8 md:p-12 bg-[#090a0f] text-white selection:bg-none overflow-hidden"
+          className="fixed inset-0 z-[9999] flex flex-col justify-between p-8 md:p-12 bg-[#090a0f] text-white selection:bg-none overflow-hidden pointer-events-auto"
         >
           {/* Ambient Lighting FX */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none animate-pulse" />
@@ -118,7 +116,7 @@ export const Preloader: React.FC = () => {
                 key={progress}
                 initial={{ opacity: 0.8, y: 2 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.1 }}
+                transition={{ duration: 0.05 }}
               >
                 {progress.toString().padStart(2, "0")}
               </motion.span>
@@ -131,7 +129,7 @@ export const Preloader: React.FC = () => {
                 className="h-full rounded-full bg-gradient-to-r from-white/70 via-white to-white/90 shadow-[0_0_15px_rgba(255,255,255,0.8)]"
                 initial={{ width: "0%" }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.05, ease: "linear" }}
+                transition={{ duration: 0.03, ease: "linear" }}
               />
             </div>
           </div>

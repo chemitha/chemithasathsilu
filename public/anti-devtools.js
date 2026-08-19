@@ -52,7 +52,6 @@
       }
       #devtools-block-overlay button:hover {
         opacity: 0.85;
-        scale: 1.5;
       }
     `;
     document.head.appendChild(style);
