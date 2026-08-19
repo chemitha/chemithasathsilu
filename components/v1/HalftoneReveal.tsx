@@ -129,7 +129,6 @@ void main() {
   vec2 duv = (vUv - uMouse) * aspect;
   float dist = length(duv);
 
-  // If trigger is set to 'never' (3) or 'off' (0), act is 0.0
   float act = (uTrigger == 3 || uTrigger == 2) ? 1.0 : (uTrigger == 0 ? 0.0 : uActivity);
   float radius = max(uRevealRadius, 1e-4) * mix(0.4, 1.0, act);
 
@@ -280,7 +279,12 @@ const HalftoneReveal = ({
 
     if (isVideo) {
       const vid = document.createElement('video');
-      vid.crossOrigin = 'anonymous';
+      
+      // ONLY set crossOrigin on absolute cross-domain URLs to prevent SecurityError
+      if (/^https?:\/\//i.test(src)) {
+        vid.crossOrigin = 'anonymous';
+      }
+
       vid.src = src;
       vid.loop = true;
       vid.muted = true;
@@ -289,21 +293,21 @@ const HalftoneReveal = ({
 
       const playPromise = vid.play();
       if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          if (error.name !== 'AbortError') {
-            console.error('Video play error:', error);
-          }
+        playPromise.catch(() => {
+          // Ignore power-saving pause or auto-play restriction errors
         });
       }
 
       vid.onloadedmetadata = () => {
         texture.image = vid;
-        uniforms.uImageSize.value = [vid.videoWidth, vid.videoHeight];
+        uniforms.uImageSize.value = [vid.videoWidth || 1, vid.videoHeight || 1];
       };
       videoRef.current = vid;
     } else {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      if (/^https?:\/\//i.test(src)) {
+        img.crossOrigin = 'anonymous';
+      }
       img.src = src;
       img.onload = () => {
         texture.image = img;
@@ -332,7 +336,6 @@ const HalftoneReveal = ({
       mouseRef.current.target = 0;
     };
 
-    // Only attach window listeners if trigger is NOT 'never'
     if (trigger !== 'never') {
       window.addEventListener('pointermove', onMove, { passive: true });
       window.addEventListener('pointerout', onLeave, { passive: true });
@@ -344,7 +347,13 @@ const HalftoneReveal = ({
       const dt = Math.min(0.05, Math.max(0.001, (now - prev) / 1000));
       prev = now;
 
-      if (videoRef.current && videoRef.current.readyState >= videoRef.current.HAVE_CURRENT_DATA) {
+      // Safe video texture updates only when media is playing and ready
+      if (
+        videoRef.current &&
+        videoRef.current.readyState >= videoRef.current.HAVE_CURRENT_DATA &&
+        !videoRef.current.paused &&
+        !videoRef.current.ended
+      ) {
         texture.needsUpdate = true;
       }
 
@@ -359,7 +368,11 @@ const HalftoneReveal = ({
       uniforms.uMouse.value[1] = m.sy;
       uniforms.uActivity.value = m.active;
 
-      renderer.render({ scene: mesh });
+      try {
+        renderer.render({ scene: mesh });
+      } catch {
+        // Prevent WebGL texture upload errors from crashing the loop
+      }
     };
     rafRef.current = requestAnimationFrame(loop);
 

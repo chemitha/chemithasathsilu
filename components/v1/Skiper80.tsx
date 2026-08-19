@@ -3,54 +3,71 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { ExternalLink, BookOpen } from "lucide-react";
+import { Tooltip } from "./Tooltip";
 
 interface Project {
   id: string;
   title: string;
+  category?: string; // Customizable line subtitle (e.g., "Billion Dollar SaaS")
   image: string;
   description: string;
+  liveUrl?: string;
+  sourceUrl?: string;
 }
 
 const PROJECTS: Project[] = [
   {
-    id: "skiper-oss-001",
-    title: "Skiper OSS 001",
+    id: "autonin",
+    title: "AutoNin",
+    category: "Voice & Form Automation",
     image:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
+      "https://www.chemitha.com/assets/images/thum/468409598-6ed4bda9-bd70-4deb-85f2-5f78278c54fd.webp",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae obcaecati id natus dignissimos totam at incidunt ipsum dolo consequatur ducimus! Placeat assumenda, Saepe repellendus delectus minima ullam facilis laboriosam facere bonum eius laudantium voluptate corrupti secundis ipsa, odio repudiandae ab accusantium dicta rerum rem? Want to create something cool together? Let's do it!",
+      "An AI-powered form automation tool that allows users to fill out digital web forms simply by speaking casually. Utilizes Faster-Whisper for high-accuracy voice-to-text speech processing.",
+    liveUrl: "https://autonin.onrender.com",
+    sourceUrl: "https://github.com/chemitha/autonin",
   },
   {
-    id: "neonsync-pro",
-    title: "NeonSync Pro",
+    id: "waitbee",
+    title: "Waitbee",
+    category: "Developer Tooling",
     image:
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop",
+      "https://github.com/user-attachments/assets/29a10a9e-b219-4453-a729-84db7b042808",
     description:
-      "The ultimate project management platform designed for modern tech teams. Streamline workflows, synchronize tasks in real-time, and boost overall developer productivity effortlessly across all projects.",
+      "The fastest way to launch high-converting viral waitlists, collect subscriber emails, track growth analytics, and generate pre-launch hype for startup releases.",
+    liveUrl: "https://waitbee.vercel.app",
+    sourceUrl: "https://github.com/chemitha/waitbee",
   },
   {
-    id: "pixelforge-studio",
-    title: "PixelForge Studio",
+    id: "vortasky",
+    title: "Vortasky",
+    category: "AI Revenue Intelligence",
     image:
-      "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1000&auto=format&fit=crop",
+      "https://vortasky.com/images/image.jpg",
     description:
-      "A next-generation creative suite powered by web technologies. Craft pixel-perfect design systems, generate automated brand assets, and collaborate with your team live in the browser.",
+      "A revenue intelligence platform that detects revenue leaks, identifies overdue invoices, and automatically recovers failed payments using real-time insights.",
+    liveUrl: "https://vortasky.com",
   },
   {
-    id: "taskflow-sonet",
-    title: "TaskFlow Sonet",
+    id: "atticnote",
+    title: "AtticNote",
+    category: "Cloud Workspace",
     image:
-      "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=1000&auto=format&fit=crop",
+      "https://chemitha.com/assets/images/thum/atticnote.webp",
     description:
-      "Minimalist state-management engine and UI component library build for speed and modern web applications. Powered by lightweight animations and responsive layout mechanics.",
+      "A lightweight web workspace designed for capturing notes, ideas, and files from anywhere. Optimized for instant access across shared computers and everyday devices.",
+    liveUrl: "https://atticnote.vercel.app",
+    sourceUrl: "https://github.com/chemitha/AtticNote",
   },
   {
-    id: "cloudvibe-bruh",
-    title: "CloudVibe Bruh",
+    id: "telecap_bot",
+    title: "Telecap Bot",
+    category: "Telegram Spyer",
     image:
       "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop",
     description:
-      "Cloud infrastructure dashboard with real-time monitoring, telemetry graphics, and serverless deployment integrations built for high-performance developer workflows.",
+      "A Telegram bot that captures desktop screenshots remotely. Run it on your PC and send /capture via Telegram to receive an instant image of your current desktop.",
+    sourceUrl: "https://github.com/chemitha/telecap-bot",
   },
 ];
 
@@ -68,7 +85,6 @@ export const Skiper80: React.FC = () => {
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const rafIdRef = useRef<number | null>(null);
 
-  // TRACK GLOBAL MOUSE POSITION
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       mousePosRef.current = { x: e.clientX, y: e.clientY };
@@ -77,7 +93,6 @@ export const Skiper80: React.FC = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // COMPLETE SCROLL LOCK (BODY + CUSTOM SCROLL CONTAINERS)
   useEffect(() => {
     const scrollContainers = document.querySelectorAll<HTMLElement>(".overflow-y-scroll");
     
@@ -101,7 +116,6 @@ export const Skiper80: React.FC = () => {
     };
   }, [selectedProject]);
 
-  // UNMOUNT CLEANUP FOR PENDING ANIMATION FRAMES
   useEffect(() => {
     return () => {
       if (rafIdRef.current !== null) {
@@ -110,7 +124,6 @@ export const Skiper80: React.FC = () => {
     };
   }, []);
 
-  // FAST & CLEAN MODAL CLOSE
   const handleCloseModal = () => {
     setSelectedProject(null);
 
@@ -130,7 +143,6 @@ export const Skiper80: React.FC = () => {
     });
   };
 
-  // ESC KEY LISTENER
   useEffect(() => {
     if (!selectedProject) return;
     const onKey = (e: KeyboardEvent) => {
@@ -140,7 +152,6 @@ export const Skiper80: React.FC = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedProject]);
 
-  // HOVER THROUGH OVERLAY (THROTTLED WITH RAF TO PREVENT DOM LAYOUT THRASHING)
   const handleOverlayMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!overlayRef.current || !selectedProject) return;
 
@@ -174,10 +185,8 @@ export const Skiper80: React.FC = () => {
 
   return (
     <div className="relative h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black">
-      {/* BACKGROUND DECORATIVE GRID */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] opacity-40 [background-size:20px_20px]" />
 
-      {/* OVERLAY BACKDROP */}
       <AnimatePresence>
         {selectedProject && (
           <motion.div
@@ -193,13 +202,12 @@ export const Skiper80: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* SINGLE UNIFIED IMAGE CONTAINER */}
       <motion.div
         layout
         transition={MORPH}
         className={`overflow-hidden rounded-[25px] border border-white/10 shadow-2xl ${
           selectedProject
-            ? "fixed z-30 left-1/2 top-[28%] sm:top-[30.5%] h-56 w-[calc(100%-3rem)] max-w-lg -translate-x-1/2 sm:h-64"
+            ? "fixed z-30 left-1/2 top-[31.25%] sm:top-[33%] h-56 w-[calc(100%-3rem)] max-w-lg -translate-x-1/2 sm:h-64"
             : "absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2"
         }`}
       >
@@ -218,7 +226,6 @@ export const Skiper80: React.FC = () => {
         />
       </motion.div>
 
-      {/* BACKGROUND PROJECT LIST */}
       <div className="relative z-10 h-full w-full px-6 sm:px-12">
         <div className="absolute bottom-[10%] right-6 z-10 flex max-w-full flex-col items-end gap-2 sm:bottom-[20%] sm:right-[10%] sm:items-start">
           <div className="flex w-full items-center gap-3 text-sm uppercase opacity-50">
@@ -268,7 +275,6 @@ export const Skiper80: React.FC = () => {
         </div>
       </div>
 
-      {/* MODAL VIEW WITH EXPLICIT ARROW-NAV BLOCK ATTR */}
       <AnimatePresence>
         {selectedProject && (
           <div
@@ -282,7 +288,6 @@ export const Skiper80: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
               className="pointer-events-auto mx-auto flex max-h-[85vh] w-full max-w-lg flex-col items-center justify-start gap-5 overflow-hidden"
             >
-              {/* FIXED HEADER */}
               <div className="flex w-full shrink-0 flex-col items-center gap-4">
                 <div className="font-cal-sans relative flex h-16 items-center justify-center text-center text-4xl font-medium sm:text-5xl">
                   <motion.h1
@@ -295,11 +300,9 @@ export const Skiper80: React.FC = () => {
                   </motion.h1>
                 </div>
 
-                {/* SPACER FOR SINGLE MORPHING IMAGE */}
                 <div className="h-56 sm:h-64 w-full shrink-0 opacity-0 pointer-events-none" />
               </div>
 
-              {/* DETAILS SECTION */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -307,11 +310,11 @@ export const Skiper80: React.FC = () => {
                 transition={{ duration: 0.2 }}
                 className="flex min-h-0 w-full flex-col gap-3"
               >
-                {/* FIXED SUB-HEADER */}
+                {/* DYNAMIC CATEGORY SUB-HEADER & DYNAMIC ADJACENT LINE */}
                 <section className="w-full shrink-0">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-foreground text-xl font-semibold tracking-tight text-white">
-                      Billion Dollar Saas
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-foreground text-xl font-semibold tracking-tight text-white whitespace-nowrap">
+                      {selectedProject.category || "Billion Dollar Saas"}
                     </h2>
                     <motion.div
                       initial={{ scaleX: 0 }}
@@ -323,41 +326,64 @@ export const Skiper80: React.FC = () => {
                   </div>
                 </section>
 
-                {/* DESCRIPTION */}
+                {/* DYNAMIC DESCRIPTION */}
                 <div className="text-foreground/50 scrollbar-thin scrollbar-thumb-zinc-700 flex max-h-[120px] flex-col gap-2 overflow-y-auto pr-2 text-xs text-zinc-400 sm:text-sm">
-                  <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Quae obcaecati id natus dignissimos totam at incidunt ipsam
-                    odio consequatur ducimus!
-                  </p>
-                  <p>
-                    placeat assumenda. Saepe repellendus delectus minima ullam
-                    facilis laboriosam facere harum quas laudantium voluptate
-                    corrupti reiciendis ipsa, odio repudiandae ab accusantium
-                    dicta rerum rem?
-                  </p>
-                  <p className="font-medium leading-6 text-zinc-300">
-                    Want to create something cool together? Let's do it!
+                  <p className="whitespace-pre-line leading-relaxed">
+                    {selectedProject.description}
                   </p>
                 </div>
 
-                {/* ACTIONS */}
                 <div className="mt-2 flex shrink-0 items-center gap-2.5">
+                {/* Live Preview Button */}
+                {selectedProject.liveUrl ? (
+                  <Tooltip content={selectedProject.liveUrl} side="up" delay={150}>
                   <a
-                    href="#"
+                    href={selectedProject.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex h-9 items-center gap-2 rounded-xl bg-white px-3 text-sm font-medium text-black transition-opacity hover:opacity-90"
                   >
                     Live Preview
                     <ExternalLink className="size-3.5" />
                   </a>
+                  </Tooltip>
+                ) : (
+                  <Tooltip content="Unavailable" side="up" delay={150}>
+                  <button
+                    disabled
+                    className="flex h-9 cursor-not-allowed items-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 px-3 text-sm font-medium text-white/40"
+                  >
+                    Live Preview
+                    <ExternalLink className="size-3.5 opacity-40" />
+                  </button>
+                  </Tooltip>
+                )}
+
+                {/* Source Code Button */}
+                {selectedProject.sourceUrl ? (
+                  <Tooltip content={selectedProject.sourceUrl} side="up" delay={150}>
                   <a
-                    href="#"
+                    href={selectedProject.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-zinc-800 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
                   >
                     See Source Code
                     <BookOpen className="size-3.5" />
                   </a>
-                </div>
+                  </Tooltip>
+                ) : (
+                  <Tooltip content="Unavailable" side="up" delay={150}>
+                  <button
+                    disabled
+                    className="flex h-9 cursor-not-allowed items-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 px-3 text-sm font-medium text-white/40"
+                  >
+                    See Source Code
+                    <BookOpen className="size-3.5 opacity-40" />
+                  </button>
+                  </Tooltip>
+                )}
+              </div>
               </motion.div>
             </div>
           </div>
