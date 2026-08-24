@@ -12,17 +12,36 @@ export default function ShowcasePage({
   const [isLoading, setIsLoading] = useState(true);
   const [showReload, setShowReload] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [targetUrl, setTargetUrl] = useState<string | null>(null);
 
   const resolvedParams = React.use(params);
-  const iframeSrc = `/api/showcase/${resolvedParams.uid}/index.html`;
 
-  // Dynamic Title Update based on UID
+  // 1. Fetch live deployed URL from your Engine API or fallback
   useEffect(() => {
-    if (resolvedParams.uid) {
-      // Formats 'waitbee' -> 'Waitbee' or keeps app name clean
-      const appName = resolvedParams.uid.charAt(0).toUpperCase() + resolvedParams.uid.slice(1);
-      document.title = `${appName} | Chemitha Sathsilu`;
+    if (!resolvedParams.uid) return;
+
+    const appName =
+      resolvedParams.uid.charAt(0).toUpperCase() + resolvedParams.uid.slice(1);
+    document.title = `${appName} | Chemitha Sathsilu`;
+
+    // Fetch exact deployed Vercel target from engine API (or fallback template)
+    async function fetchDeployment() {
+      try {
+        const res = await fetch(`/api/showcase/${resolvedParams.uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.deployedUrl) {
+            setTargetUrl(data.deployedUrl);
+            return;
+          }
+        }
+      } catch {
+        // Fallback if API route isn't set up yet
+      }
+      setTargetUrl(`https://demo-${resolvedParams.uid}.vercel.app`);
     }
+
+    fetchDeployment();
   }, [resolvedParams.uid]);
 
   // Timeout logic: Shows reload button if iframe takes longer than 8 seconds
@@ -40,10 +59,9 @@ export default function ShowcasePage({
   const handleReload = () => {
     setIsLoading(true);
     setShowReload(false);
-    setReloadKey((prev) => prev + 1); // Force iframe re-mount
+    setReloadKey((prev) => prev + 1);
   };
 
-  // Sync title from inside iframe if accessible
   const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
     setIsLoading(false);
     try {
@@ -52,16 +70,15 @@ export default function ShowcasePage({
         document.title = `${iframeTitle} | Chemitha Sathsilu`;
       }
     } catch {
-      // Cross-origin fallback keeps the default formatted title
+      // Cross-origin fallback keeps default title
     }
   };
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
-      {/* 1. Loading Screen with Native Mouse Cursor & Timeout Reload */}
+      {/* 1. Loading Screen */}
       {isLoading && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black transition-opacity duration-300 !cursor-default">
-          {/* Centered loader group */}
           <div className="flex flex-col items-center">
             <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3 pointer-events-none" />
             <span className="text-xs text-neutral-400 font-mono tracking-wider pointer-events-none">
@@ -69,7 +86,6 @@ export default function ShowcasePage({
             </span>
           </div>
 
-          {/* Absolute reload section so it doesn't affect the loader's layout */}
           {showReload && (
             <div className="absolute bottom-12 flex flex-col items-center animate-fade-in !cursor-auto">
               <p className="text-xs text-neutral-400 font-mono tracking-wider !cursor-auto pointer-events-auto">
@@ -86,16 +102,18 @@ export default function ShowcasePage({
         </div>
       )}
 
-      {/* Embedded Parent Frame with Full Auth & Top-Level Navigation Permissions */}
-      <iframe
-        key={reloadKey}
-        src={iframeSrc}
-        className="w-full h-full border-0 relative z-10"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
-        allow="geolocation; microphone; camera; clipboard-write; clipboard-read; autoplay"
-        title={`Showcase - ${resolvedParams.uid}`}
-        onLoad={handleIframeLoad}
-      />
+      {/* Embedded App Frame */}
+      {targetUrl && (
+        <iframe
+          key={reloadKey}
+          src={targetUrl}
+          className="w-full h-full border-0 relative z-10"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
+          allow="geolocation; microphone; camera; clipboard-write; clipboard-read; autoplay"
+          title={`Showcase - ${resolvedParams.uid}`}
+          onLoad={handleIframeLoad}
+        />
+      )}
 
       {/* 2. Glassmorphic Bottom-Right Pill */}
       <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-200/50 backdrop-blur-md border border-white/10 text-xs text-white/80 shadow-md opacity-100 hover:opacity-30 transition-opacity duration-200 !cursor-auto pointer-events-auto">

@@ -25,11 +25,21 @@ export async function GET(
   const fileBuffer = fs.readFileSync(targetPath);
   const contentType = mime.lookup(targetPath) || "application/octet-stream";
 
-  return new NextResponse(fileBuffer, {
+  const response = new NextResponse(fileBuffer, {
     headers: {
       "Content-Type": contentType,
       "X-Frame-Options": "SAMEORIGIN",
-      "Content-Security-Policy": "frame-ancestors 'self'",
     },
   });
+
+  // Safely set CSP ONLY if embedding is intended
+  const referrer = req.headers.get("referer") || "";
+  if (referrer.includes("chemitha.com")) {
+    response.headers.set(
+      "Content-Security-Policy",
+      "frame-ancestors 'self' https://chemitha.com https://*.chemitha.com"
+    );
+  }
+
+  return response;
 }
