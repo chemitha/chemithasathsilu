@@ -16,17 +16,28 @@ export default function ShowcasePage({
 
   const resolvedParams = React.use(params);
 
-  // 1. Set dynamic document title & fetch live deployed URL from Engine API
+  // 1. Force dynamic document title update
   useEffect(() => {
-    if (!resolvedParams.uid) return;
+    if (!resolvedParams?.uid) return;
 
-    // Set dynamic tab title: "Stripe | Chemitha Sathsilu"
-    const appName =
-      resolvedParams.uid.charAt(0).toUpperCase() +
-      resolvedParams.uid.slice(1).toLowerCase();
-    document.title = `${appName} | Chemitha Sathsilu`;
+    const slug = resolvedParams.uid;
+    const formattedTitle = `${slug.toUpperCase()} | Chemitha Sathsilu`;
+    
+    // Direct DOM write
+    document.title = formattedTitle;
 
-    // Fetch exact deployed Vercel target from engine API (bypassing cache)
+    // Secondary fallback to overcome layout title overrides
+    const timeout = setTimeout(() => {
+      document.title = formattedTitle;
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [resolvedParams?.uid]);
+
+  // 2. Fetch live deployed URL from Engine API
+  useEffect(() => {
+    if (!resolvedParams?.uid) return;
+
     async function fetchDeployment() {
       try {
         const res = await fetch(`/api/showcase/${resolvedParams.uid}`, {
@@ -40,13 +51,13 @@ export default function ShowcasePage({
           }
         }
       } catch {
-        // Fallback if API route isn't set up yet
+        // Fallback if API route fails
       }
       setTargetUrl(`https://demo-${resolvedParams.uid}.vercel.app`);
     }
 
     fetchDeployment();
-  }, [resolvedParams.uid]);
+  }, [resolvedParams?.uid]);
 
   // Timeout logic: Shows reload button if iframe takes longer than 10 seconds
   useEffect(() => {
