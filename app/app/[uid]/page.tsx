@@ -16,12 +16,14 @@ export default function ShowcasePage({
 
   const resolvedParams = React.use(params);
 
-  // 1. Fetch live deployed URL from your Engine API or fallback
+  // 1. Set dynamic document title & fetch live deployed URL from Engine API
   useEffect(() => {
     if (!resolvedParams.uid) return;
 
+    // Set dynamic tab title: "Stripe | Chemitha Sathsilu"
     const appName =
-      resolvedParams.uid.charAt(0).toUpperCase() + resolvedParams.uid.slice(1);
+      resolvedParams.uid.charAt(0).toUpperCase() +
+      resolvedParams.uid.slice(1).toLowerCase();
     document.title = `${appName} | Chemitha Sathsilu`;
 
     // Fetch exact deployed Vercel target from engine API (bypassing cache)
@@ -46,14 +48,14 @@ export default function ShowcasePage({
     fetchDeployment();
   }, [resolvedParams.uid]);
 
-  // Timeout logic: Shows reload button if iframe takes longer than 8 seconds
+  // Timeout logic: Shows reload button if iframe takes longer than 10 seconds
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isLoading) {
       setShowReload(false);
       timer = setTimeout(() => {
         setShowReload(true);
-      }, 8000);
+      }, 10000);
     }
     return () => clearTimeout(timer);
   }, [isLoading, reloadKey]);
@@ -64,16 +66,8 @@ export default function ShowcasePage({
     setReloadKey((prev) => prev + 1);
   };
 
-  const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
+  const handleIframeLoad = () => {
     setIsLoading(false);
-    try {
-      const iframeTitle = e.currentTarget.contentDocument?.title;
-      if (iframeTitle) {
-        document.title = `${iframeTitle} | Chemitha Sathsilu`;
-      }
-    } catch {
-      // Cross-origin fallback keeps default title
-    }
   };
 
   return (
