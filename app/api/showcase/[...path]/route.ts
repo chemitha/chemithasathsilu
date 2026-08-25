@@ -15,47 +15,31 @@ export async function GET(
 
   if (vercelToken) {
     try {
-      // 1. Search Vercel API for projects matching target slug (e.g., "demo-vercel")
-      const searchRes = await fetch(
-        `https://api.vercel.com/v9/projects?search=demo-${slug}`,
+      // Fetch assigned domains directly for project "demo-[slug]"
+      const res = await fetch(
+        `https://api.vercel.com/v9/projects/demo-${slug}/domains`,
         {
           headers: { Authorization: `Bearer ${vercelToken}` },
         }
       );
 
-      if (searchRes.ok) {
-        const searchData = await searchRes.json();
-        const project = searchData.projects?.[0];
+      if (res.ok) {
+        const data = await res.json();
+        // Get the main production domain (e.g., demo-linear.vercel.app)
+        const cleanDomain = data.domains?.[0]?.name;
 
-        if (project) {
-          // 2. Fetch primary production target domain for matching project
-          const domainRes = await fetch(
-            `https://api.vercel.com/v9/projects/${project.id}`,
-            {
-              headers: { Authorization: `Bearer ${vercelToken}` },
-            }
-          );
-
-          if (domainRes.ok) {
-            const domainData = await domainRes.json();
-            const targetDomain =
-              domainData.targets?.production?.domain ||
-              domainData.domains?.[0]?.name;
-
-            if (targetDomain) {
-              return NextResponse.json({
-                deployedUrl: `https://${targetDomain}`,
-              });
-            }
-          }
+        if (cleanDomain) {
+          return NextResponse.json({
+            deployedUrl: `https://${cleanDomain}`,
+          });
         }
       }
     } catch (err) {
-      console.error("Vercel dynamic resolution error:", err);
+      console.error("Vercel domain fetch error:", err);
     }
   }
 
-  // Fallback pattern
+  // Fallback pattern if API fails
   return NextResponse.json({
     deployedUrl: `https://demo-${slug}.vercel.app`,
   });
