@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Stop Next.js / Vercel Edge from caching this route response
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export async function GET(
   req: NextRequest,
@@ -16,42 +14,35 @@ export async function GET(
   }
 
   const vercelToken = process.env.VERCEL_TOKEN;
-  const teamId = process.env.VERCEL_TEAM_ID;
 
   if (vercelToken) {
     try {
-      const url = new URL(
-        `https://api.vercel.com/v9/projects/demo-${slug}/domains`
+      // Fetch the single latest deployment build hash for project "demo-[slug]"
+      const res = await fetch(
+        `https://api.vercel.com/v6/deployments?projectId=demo-${slug}&limit=1`,
+        {
+          headers: { Authorization: `Bearer ${vercelToken}` },
+          cache: "no-store",
+        }
       );
-      if (teamId) {
-        url.searchParams.append("teamId", teamId);
-      }
-
-      const res = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${vercelToken}`,
-          "Content-Type": "application/json",
-        },
-        cache: "no-store", // Prevent fetch caching
-      });
 
       if (res.ok) {
         const data = await res.json();
-        const primaryDomain = data.domains?.[0]?.name;
+        const latestBuildUrl = data.deployments?.[0]?.url;
 
-        if (primaryDomain) {
+        if (latestBuildUrl) {
           return NextResponse.json({
-            deployedUrl: `https://${primaryDomain}`,
+            deployedUrl: `https://${latestBuildUrl}`,
           });
         }
       }
     } catch (err) {
-      console.error("Vercel domain fetch error:", err);
+      console.error("Vercel deployment fetch error:", err);
     }
   }
 
-  // Fallback if token is unconfigured or domain query returns empty
-  return NextResponse.json({
-    deployedUrl: `https://demo-${slug}.vercel.app`,
-  });
+  return NextResponse.json(
+    { error: "Deployment not found" },
+    { status: 404 }
+  );
 }
