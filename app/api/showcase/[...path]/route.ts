@@ -1,24 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Fetch active production domain dynamically via Vercel API
-async function getVercelProjectDomain(projectId: string, vercelToken: string): Promise<string> {
-  try {
-    const res = await fetch(`https://api.vercel.com/v9/projects/${projectId}`, {
-      headers: {
-        Authorization: `Bearer ${vercelToken}`,
-      },
-    });
-
-    if (!res.ok) return "";
-    const data = await res.json();
-    const primaryDomain = data.targets?.production?.domain || data.domains?.[0]?.name;
-    return primaryDomain ? `https://${primaryDomain}` : "";
-  } catch (err) {
-    console.error("Error fetching Vercel project domain:", err);
-    return "";
-  }
-}
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -30,16 +11,52 @@ export async function GET(
     return new NextResponse("Showcase slug is required", { status: 400 });
   }
 
-  // 1. Live resolution via Vercel API if token exists
   const vercelToken = process.env.VERCEL_TOKEN;
+
   if (vercelToken) {
-    const projectId = `demo-${slug}`;
-    const projectDomain = await getVercelProjectDomain(projectId, vercelToken);
-    if (projectDomain) {
-      return NextResponse.json({ deployedUrl: projectDomain });
+    try {
+      // 1. Search Vercel API for projects matching target slug (e.g., "demo-vercel")
+      const searchRes = await fetch(
+        `https://api.vercel.com/v9/projects?search=demo-${slug}`,
+        {
+          headers: { Authorization: `Bearer ${vercelToken}` },
+        }
+      );
+
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        const project = searchData.projects?.[0];
+
+        if (project) {
+          // 2. Fetch primary production target domain for matching project
+          const domainRes = await fetch(
+            `https://api.vercel.com/v9/projects/${project.id}`,
+            {
+              headers: { Authorization: `Bearer ${vercelToken}` },
+            }
+          );
+
+          if (domainRes.ok) {
+            const domainData = await domainRes.json();
+            const targetDomain =
+              domainData.targets?.production?.domain ||
+              domainData.domains?.[0]?.name;
+
+            if (targetDomain) {
+              return NextResponse.json({
+                deployedUrl: `https://${targetDomain}`,
+              });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Vercel dynamic resolution error:", err);
     }
   }
 
-  // 2. Fallback to standard production URL pattern
-  return NextResponse.json({ deployedUrl: `https://demo-${slug}.vercel.app` });
+  // Fallback pattern
+  return NextResponse.json({
+    deployedUrl: `https://demo-${slug}.vercel.app`,
+  });
 }
