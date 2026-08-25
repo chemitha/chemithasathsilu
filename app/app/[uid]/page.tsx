@@ -24,10 +24,12 @@ export default function ShowcasePage({
       resolvedParams.uid.charAt(0).toUpperCase() + resolvedParams.uid.slice(1);
     document.title = `${appName} | Chemitha Sathsilu`;
 
-    // Fetch exact deployed Vercel target from engine API (or fallback template)
+    // Fetch exact deployed Vercel target from engine API (bypassing cache)
     async function fetchDeployment() {
       try {
-        const res = await fetch(`/api/showcase/${resolvedParams.uid}`);
+        const res = await fetch(`/api/showcase/${resolvedParams.uid}`, {
+          cache: 'no-store',
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.deployedUrl) {
