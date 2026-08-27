@@ -47,13 +47,16 @@ export async function GET(
     }
   }
 
-  // 2. Dispatch telemetry to Express engine (database update + deduplicated Telegram card edit)
+  // 2. Dispatch telemetry to Express engine
   const trackerUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "http://localhost:3001";
 
   try {
     await fetch(`${trackerUrl}/api/track-view`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "bypass-tunnel-reminder": "true",
+      },
       body: JSON.stringify({ slug, deployedUrl }),
     });
   } catch (err) {
