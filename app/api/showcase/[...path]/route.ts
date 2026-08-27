@@ -51,6 +51,7 @@ export async function GET(
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const adminId = process.env.ADMIN_TELEGRAM_CHAT_ID;
 
+  // Replace the fire-and-forget fetch with an awaited call:
   if (botToken && adminId) {
     const rawCompany = slug.split("-")[0].toUpperCase();
 
@@ -60,16 +61,19 @@ export async function GET(
       `• <b>Target Demo:</b> ${deployedUrl}\n` +
       `• <b>Opened At:</b> ${new Date().toLocaleTimeString()}`;
 
-    // Non-blocking background fetch
-    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: adminId,
-        text: message,
-        parse_mode: "HTML",
-      }),
-    }).catch((err) => console.error("[Showcase API] Telegram alert error:", err));
+    try {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: adminId,
+          text: message,
+          parse_mode: "HTML",
+        }),
+      });
+    } catch (err) {
+      console.error("[Showcase API] Telegram alert error:", err);
+    }
   }
 
   return NextResponse.json({ deployedUrl });
