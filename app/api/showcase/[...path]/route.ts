@@ -47,33 +47,17 @@ export async function GET(
     }
   }
 
-  // 2. Direct Telegram Notification (No Database Required)
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const adminId = process.env.ADMIN_TELEGRAM_CHAT_ID;
+  // 2. Dispatch telemetry to Express engine (database update + deduplicated Telegram card edit)
+  const trackerUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "http://localhost:3001";
 
-  // Replace the fire-and-forget fetch with an awaited call:
-  if (botToken && adminId) {
-    const rawCompany = slug.split("-")[0].toUpperCase();
-
-    const message =
-      `🎯 <b>Hot Lead Alert! Showcase Opened</b>\n\n` +
-      `• <b>Company (Slug):</b> <code>${rawCompany}</code> (${slug})\n` +
-      `• <b>Target Demo:</b> ${deployedUrl}\n` +
-      `• <b>Opened At:</b> ${new Date().toLocaleTimeString()}`;
-
-    try {
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: adminId,
-          text: message,
-          parse_mode: "HTML",
-        }),
-      });
-    } catch (err) {
-      console.error("[Showcase API] Telegram alert error:", err);
-    }
+  try {
+    await fetch(`${trackerUrl}/api/track-view`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, deployedUrl }),
+    });
+  } catch (err) {
+    console.error("[Showcase API] Telemetry dispatch error:", err);
   }
 
   return NextResponse.json({ deployedUrl });
