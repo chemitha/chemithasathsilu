@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+// Simple regex to catch search engines, social media preview bots, and curl/http agents
+const BOT_REGEX = /bot|spider|crawl|slurp|facebookexternalhit|telegrambot|twitterbot|whatsapp|linkedinbot|discordbot|curl|wget|python-requests/i;
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
@@ -47,8 +50,16 @@ export async function GET(
     }
   }
 
-  // 2. Dispatch telemetry to Express engine
+  // 2. Bot Detection Guard
+  const userAgent = req.headers.get("user-agent") || "";
+  if (BOT_REGEX.test(userAgent)) {
+    console.log(`[Showcase API] Ignored bot request for "${slug}" (${userAgent})`);
+    return NextResponse.json({ deployedUrl, tracked: false });
+  }
+
+  // 3. Dispatch telemetry to Express engine
   const trackerUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "http://localhost:3001";
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
 
   try {
     await fetch(`${trackerUrl}/api/track-view`, {
@@ -57,11 +68,11 @@ export async function GET(
         "Content-Type": "application/json",
         "bypass-tunnel-reminder": "true",
       },
-      body: JSON.stringify({ slug, deployedUrl }),
+      body: JSON.stringify({ slug, deployedUrl, clientIp }),
     });
   } catch (err) {
     console.error("[Showcase API] Telemetry dispatch error:", err);
   }
 
-  return NextResponse.json({ deployedUrl });
+  return NextResponse.json({ deployedUrl, tracked: true });
 }
