@@ -45,17 +45,32 @@ export default function ShowcasePage({
     return () => clearTimeout(timeout);
   }, [resolvedParams?.uid]);
 
+  // Helper to safely append ?slug=<uid> to any URL
+  const buildUrlWithSlug = (baseUrlStr: string, slug: string): string => {
+    try {
+      const urlObj = new URL(baseUrlStr);
+      urlObj.searchParams.set('slug', slug);
+      return urlObj.toString();
+    } catch {
+      // Fallback string concatenation if relative path or malformed URL
+      const separator = baseUrlStr.includes('?') ? '&' : '?';
+      return `${baseUrlStr}${separator}slug=${encodeURIComponent(slug)}`;
+    }
+  };
+
   // 2. Fetch live deployment & ping telemetry tracking
   useEffect(() => {
     if (!resolvedParams?.uid) return;
 
     async function initShowcase() {
+      const slug = resolvedParams.uid;
+
       // Ping telemetry endpoint on the engine backend
       try {
         const trackRes = await fetch(`https://b2b-micro-saas-engine.onrender.com/api/track-view`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug: resolvedParams.uid }),
+          body: JSON.stringify({ slug }),
         });
         if (trackRes.ok) {
           const trackData = await trackRes.json();
@@ -66,21 +81,26 @@ export default function ShowcasePage({
       }
 
       // Fetch showcase URL route
+      let rawTargetUrl: string | null = null;
       try {
-        const res = await fetch(`/api/showcase/${resolvedParams.uid}`, {
+        const res = await fetch(`/api/showcase/${slug}`, {
           cache: 'no-store',
         });
         if (res.ok) {
           const data = await res.json();
           if (data.deployedUrl) {
-            setTargetUrl(data.deployedUrl);
-            return;
+            rawTargetUrl = data.deployedUrl;
           }
         }
-      } catch {
-        // Fallback
+      } catch (err) {
+        console.warn('Failed to fetch deployed URL from showcase API, using fallback', err);
       }
-      setTargetUrl(`https://demo-${resolvedParams.uid}.vercel.app`);
+
+      // Use target URL or construct primary fallback domain
+      const baseUrl = rawTargetUrl || `https://demo-${slug}.vercel.app`;
+      
+      // Ensure ?slug= query parameter is passed into the iframe
+      setTargetUrl(buildUrlWithSlug(baseUrl, slug));
     }
 
     initShowcase();
