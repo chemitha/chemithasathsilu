@@ -8,7 +8,7 @@ interface TrialUrgencyBannerProps {
   dealSigned?: boolean;
   activityCount?: number;
   onUpgradeClick?: () => void;
-  onRequestTimeClick?: () => void;
+  workspaceId?: string;
 }
 
 export function TrialUrgencyBanner({
@@ -17,7 +17,7 @@ export function TrialUrgencyBanner({
   dealSigned = false,
   activityCount = 0,
   onUpgradeClick,
-  onRequestTimeClick,
+  workspaceId = "demo-workspace",
 }: TrialUrgencyBannerProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -26,7 +26,27 @@ export function TrialUrgencyBanner({
     isExpired: boolean;
   }>({ days: 14, hours: 0, minutes: 0, isExpired: false });
 
-  const [dismissed, setDismissed] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  // Extension & Reason Flow States
+  const [hasUsedFirstExtension, setHasUsedFirstExtension] = useState(false);
+  const [firstExtensionMs, setFirstExtensionMs] = useState<number>(0);
+  const [step, setStep] = useState<"DEFAULT" | "CONFIRM_24H" | "REASONS_FORM" | "THANK_YOU">("DEFAULT");
+  
+  // Reasons Form State
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+  const [customReason, setCustomReason] = useState("");
+  const [isSendingTelegram, setIsSendingTelegram] = useState(false);
+  const [telegramSent, setTelegramSent] = useState(false);
+
+  // Load extension state from LocalStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const extUsed = localStorage.getItem(`ext_used_${workspaceId}`);
+    const extMs = localStorage.getItem(`ext_ms_${workspaceId}`);
+    if (extUsed === "true") setHasUsedFirstExtension(true);
+    if (extMs) setFirstExtensionMs(Number(extMs));
+  }, [workspaceId]);
 
   useEffect(() => {
     if (!createdAt && !handshakeAt) return;
@@ -34,11 +54,17 @@ export function TrialUrgencyBanner({
     const calculateTime = () => {
       const now = Date.now();
 
-      // SCENARIO 1: DEAL SIGNED (Handshake Phase - 7 Days to final payment)
       if (dealSigned) {
         const anchor = handshakeAt ? new Date(handshakeAt).getTime() : new Date(createdAt).getTime();
         const dealDurationMs = 7 * 24 * 60 * 60 * 1000;
-        const expiresAt = anchor + dealDurationMs;
+        
+        // FIX: If extended, calculate 24h from whichever is LATER: original expiration or activation time
+        let expiresAt = anchor + dealDurationMs;
+        if (hasUsedFirstExtension && firstExtensionMs > 0) {
+          const extensionStart = Math.max(expiresAt, firstExtensionMs);
+          expiresAt = extensionStart + 24 * 60 * 60 * 1000;
+        }
+
         const diff = expiresAt - now;
 
         if (diff <= 0) {
@@ -54,7 +80,6 @@ export function TrialUrgencyBanner({
         return;
       }
 
-      // SCENARIO 2: OUTREACH PREVIEW (High activity reduces 14 days -> 7 days)
       const isHighUsage = activityCount > 10;
       const allowedDays = isHighUsage ? 7 : 14;
       const trialDurationMs = allowedDays * 24 * 60 * 60 * 1000;
@@ -72,77 +97,265 @@ export function TrialUrgencyBanner({
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        setTimeLeft({ days, hours, minutes, isExpired: false });
+      setTimeLeft({ days, hours, minutes, isExpired: false });
     };
 
     calculateTime();
     const interval = setInterval(calculateTime, 60000);
     return () => clearInterval(interval);
-  }, [createdAt, handshakeAt, dealSigned, activityCount]);
+  }, [createdAt, handshakeAt, dealSigned, activityCount, hasUsedFirstExtension, firstExtensionMs]);
 
   if (!createdAt && !handshakeAt) return null;
 
-  // 1. Return early immediately if deal isn't signed
   if (!dealSigned) {
     return null;
   }
 
-  // 2. HARD PAYWALL LOCKOUT OVERLAY
-  if (timeLeft.isExpired) {
-    return (
-      <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-md p-6 text-white">
-        <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-center shadow-2xl">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-white">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </div>
-          <h2 className="text-lg font-semibold tracking-tight text-white">
-            Handshake Grace Period Ended
-          </h2>
-          <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
-            The 7-day deployment grace period for this workspace has expired. Complete migration to maintain continuous access.
-          </p>
-          <div className="mt-6 flex flex-col gap-2">
-            <button
-              onClick={onRequestTimeClick || onUpgradeClick}
-              className="w-full rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
-            >
-              Request More Time
-            </button>
-            <button
-              onClick={() => setDismissed(true)}
-              className="w-full rounded-xl bg-zinc-900 px-4 py-2.5 text-xs font-medium text-zinc-400 border border-zinc-800 transition hover:bg-zinc-800 hover:text-white active:scale-[0.98]"
-            >
-              Fine, Got It
-            </button>
+  const isLockedOut = timeLeft.isExpired;
+
+  const handleRequestTimeClick = () => {
+    if (!hasUsedFirstExtension) {
+      setStep("CONFIRM_24H");
+    } else {
+      setStep("REASONS_FORM");
+    }
+  };
+
+  const handleConfirm24h = () => {
+    const now = Date.now();
+    localStorage.setItem(`ext_used_${workspaceId}`, "true");
+    localStorage.setItem(`ext_ms_${workspaceId}`, String(now));
+    setHasUsedFirstExtension(true);
+    setFirstExtensionMs(now);
+    setShowModal(false);
+    setStep("DEFAULT");
+  };
+
+  const toggleReason = (reason: string) => {
+    setSelectedReasons((prev) =>
+      prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]
+    );
+  };
+
+  const handleSendTelegramReason = async () => {
+    setIsSendingTelegram(true);
+
+    try {
+      const res = await fetch("/api/request-extension", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspaceId,
+          selectedReasons,
+          customReason,
+        }),
+      });
+
+      if (res.ok) {
+        setTelegramSent(true);
+      } else {
+        console.error("Extension request failed");
+      }
+    } catch (error) {
+      console.error("Failed to send Telegram alert:", error);
+    } finally {
+      setIsSendingTelegram(false);
+    }
+  };
+
+  return (
+    <>
+      {/* FLOATING BOTTOM-LEFT PILL */}
+      <div className="fixed bottom-5 left-5 z-[99999] flex cursor-pointer items-center gap-3 rounded-full border border-zinc-800 bg-zinc-950/90 py-2 px-4 text-xs text-zinc-300 shadow-2xl backdrop-blur-md select-none hover:border-zinc-700">
+        <span className="relative flex h-2 w-2">
+          <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${isLockedOut ? "bg-red-400" : "bg-emerald-400"}`}></span>
+          <span className={`relative inline-flex h-2 w-2 rounded-full ${isLockedOut ? "bg-red-500" : "bg-emerald-500"}`}></span>
+        </span>
+        <span className="font-medium">
+          {isLockedOut ? "Grace Period Expired" : "Handshake Active:"}{" "}
+          {!isLockedOut && (
+            <strong className="text-white">
+              {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
+            </strong>
+          )}
+        </span>
+        <button
+          onClick={() => {
+            setStep("DEFAULT");
+            setShowModal(true);
+          }}
+          className="ml-1 cursor-pointer rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-black transition hover:bg-zinc-200 active:scale-95"
+        >
+          {isLockedOut ? "Resolve" : "Manage"}
+        </button>
+      </div>
+
+      {/* MODAL OVERLAY */}
+      {(showModal || isLockedOut) && (
+        <div className="fixed inset-0 z-[999999] flex cursor-default items-center justify-center bg-black/80 backdrop-blur-md p-6 text-white">
+          <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-center shadow-2xl">
+            
+            {/* STEP 1: DEFAULT / MAIN OVERLAY */}
+            {step === "DEFAULT" && (
+              <>
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-white">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold tracking-tight text-white">
+                  {isLockedOut ? "Handshake Grace Period Ended" : "Production Handshake Details"}
+                </h2>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                  {isLockedOut
+                    ? "The deployment grace period for this workspace has concluded. Finalize migration to maintain uninterrupted access."
+                    : `Workspace grace period active. You have ${timeLeft.days}d ${timeLeft.hours}h remaining before payment finalization.`}
+                </p>
+                <div className="mt-6 flex flex-col gap-2.5">
+                  <button
+                    onClick={handleRequestTimeClick}
+                    className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                  >
+                    Request More Time
+                  </button>
+                  <button
+                    onClick={() => setStep("THANK_YOU")}
+                    className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
+                  >
+                    Fine, Got It
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* STEP 2: CONFIRM 24H EXTENSION */}
+            {step === "CONFIRM_24H" && (
+              <>
+                <h2 className="text-lg font-semibold tracking-tight text-white">
+                  Grant Additional 24 Hours?
+                </h2>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                  We can extend your workspace evaluation for strictly <strong className="text-white">24 extra hours</strong>. Would you like to proceed with this standard extension?
+                </p>
+                <div className="mt-6 flex flex-col gap-2.5">
+                  <button
+                    onClick={handleConfirm24h}
+                    className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                  >
+                    Yes, Apply 24h Extension
+                  </button>
+                  <button
+                    onClick={() => setStep("DEFAULT")}
+                    className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* STEP 3: REASONS FORM */}
+            {step === "REASONS_FORM" && (
+              <>
+                <h2 className="text-lg font-semibold tracking-tight text-white">
+                  Request Additional Time
+                </h2>
+                <p className="mt-2 text-xs text-zinc-400">
+                  Select your reason for extension so our core team can review your workspace:
+                </p>
+                
+                {!telegramSent ? (
+                  <>
+                    <div className="mt-4 flex flex-col gap-2 text-left text-xs">
+                      {[
+                        "Awaiting internal executive/client sign-off",
+                        "Integrating secondary API / custom domain",
+                        "Finance/billing department processing delay",
+                        "Need more end-to-end sandbox testing",
+                      ].map((reason) => (
+                        <div
+                          key={reason}
+                          onClick={() => toggleReason(reason)}
+                          className={`flex cursor-pointer items-center gap-2.5 rounded-lg border p-2.5 transition ${
+                            selectedReasons.includes(reason)
+                              ? "border-white bg-white/10 text-white"
+                              : "border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedReasons.includes(reason)}
+                            onChange={() => {}} // Controlled by outer div onClick
+                            className="pointer-events-none rounded border-zinc-700 bg-zinc-900 text-white focus:ring-0"
+                          />
+                          <span>{reason}</span>
+                        </div>
+                      ))}
+                      <textarea
+                        value={customReason}
+                        onChange={(e) => setCustomReason(e.target.value)}
+                        placeholder="Other reason / specific context..."
+                        className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-900 p-2.5 text-xs text-white placeholder-zinc-500 focus:border-white focus:outline-none"
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="mt-5 flex flex-col gap-2.5">
+                      <button
+                        onClick={handleSendTelegramReason}
+                        disabled={isSendingTelegram}
+                        className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98] disabled:opacity-50"
+                      >
+                        {isSendingTelegram ? "Sending Request..." : "Submit Extension Request"}
+                      </button>
+                      <button
+                        onClick={() => setStep("DEFAULT")}
+                        className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center">
+                    <p className="text-xs text-zinc-300">
+                      Request submitted to founder admin. Your workspace context was forwarded for direct review.
+                    </p>
+                    <button
+                      onClick={() => setStep("DEFAULT")}
+                      className="mt-4 w-full cursor-pointer rounded-xl bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-zinc-200"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* STEP 4: THANK YOU MESSAGE */}
+            {step === "THANK_YOU" && (
+              <>
+                <h2 className="text-lg font-semibold tracking-tight text-white">
+                  Thank You for Understanding
+                </h2>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                  We appreciate your cooperation in finalizing workspace production deployment.
+                </p>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setStep("DEFAULT");
+                  }}
+                  className="mt-6 w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                >
+                  Close Window
+                </button>
+              </>
+            )}
+
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (dismissed) return null;
-
-  // 3. FLOATING CORNER PILL
-  return (
-    <div className="fixed bottom-5 right-5 z-[9999] flex items-center gap-3 rounded-full border border-zinc-800 bg-zinc-950/90 py-2 px-3.5 text-xs text-zinc-300 shadow-xl backdrop-blur-md">
-      <span className="relative flex h-2 w-2">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-      </span>
-      <span className="font-medium">
-        Handshake Active:{" "}
-        <strong className="text-white">
-          {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
-        </strong>
-      </span>
-      <button
-        onClick={onUpgradeClick}
-        className="ml-1 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-black transition hover:bg-zinc-200 active:scale-95"
-      >
-        Complete
-      </button>
-    </div>
+      )}
+    </>
   );
 }
