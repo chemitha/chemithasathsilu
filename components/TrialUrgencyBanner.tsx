@@ -32,7 +32,7 @@ export function TrialUrgencyBanner({
   // Extension & Reason Flow States
   const [hasUsedFirstExtension, setHasUsedFirstExtension] = useState(false);
   const [firstExtensionMs, setFirstExtensionMs] = useState<number>(0);
-  const [step, setStep] = useState<"DEFAULT" | "CONFIRM_24H" | "REASONS_FORM" | "THANK_YOU">("DEFAULT");
+  const [step, setStep] = useState<"DEFAULT" | "CONFIRM_24H" | "REASONS_FORM">("DEFAULT");
 
   // Reasons Form State
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
@@ -166,7 +166,15 @@ export function TrialUrgencyBanner({
   return (
     <>
       {/* FLOATING BOTTOM-LEFT PILL */}
-      <div className="fixed bottom-5 left-5 z-[99999] flex cursor-pointer items-center gap-3 rounded-full border border-zinc-800 bg-zinc-950/90 py-2 px-4 text-xs text-zinc-300 shadow-2xl backdrop-blur-md select-none hover:border-zinc-700">
+      <div 
+        onClick={() => {
+          if (isLockedOut) {
+            setStep("DEFAULT");
+            setShowModal(true);
+          }
+        }}
+        className="fixed bottom-5 left-5 z-[99999] flex items-center gap-3 rounded-full border border-zinc-800 bg-zinc-950/90 py-2 px-4 text-xs text-zinc-300 shadow-2xl backdrop-blur-md select-none hover:border-zinc-700"
+      >
         <span className="relative flex h-2 w-2">
           <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${isLockedOut ? "bg-red-400" : "bg-emerald-400"}`}></span>
           <span className={`relative inline-flex h-2 w-2 rounded-full ${isLockedOut ? "bg-red-500" : "bg-emerald-500"}`}></span>
@@ -179,18 +187,14 @@ export function TrialUrgencyBanner({
             </strong>
           )}
         </span>
-        <button
-          onClick={() => {
-            setStep("DEFAULT");
-            setShowModal(true);
-          }}
-          className="ml-1 cursor-pointer rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-black transition hover:bg-zinc-200 active:scale-95"
-        >
-          {isLockedOut ? "Resolve" : "Status"}
-        </button>
+        {isLockedOut && (
+          <button className="ml-1 cursor-pointer rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-black transition hover:bg-zinc-200 active:scale-95">
+            Resolve
+          </button>
+        )}
       </div>
 
-      {/* MODAL OVERLAY */}
+      {/* MODAL OVERLAY - ONLY SHOW WHEN LOCKED OUT OR MANUALLY TRIGGERED WHILE EXPIRED */}
       {(showModal || isLockedOut) && (
         <div className="fixed inset-0 z-[999999] flex cursor-default items-center justify-center bg-black/80 backdrop-blur-md p-6 text-white">
           <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-center shadow-2xl">
@@ -213,23 +217,15 @@ export function TrialUrgencyBanner({
                 </p>
                 <div className="mt-6 flex flex-col gap-2.5">
                   {isLockedOut ? (
-                    <>
-                      <button
-                        onClick={handleRequestTimeClick}
-                        className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
-                      >
-                        Request More Time
-                      </button>
-                      <button
-                        onClick={() => setStep("THANK_YOU")}
-                        className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
-                      >
-                        I Understand
-                      </button>
-                    </>
+                    <button
+                      onClick={handleRequestTimeClick}
+                      className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                    >
+                      Request More Time
+                    </button>
                   ) : (
                     <button
-                      onClick={() => setStep("THANK_YOU")}
+                      onClick={() => setShowModal(false)}
                       className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
                     >
                       I Understand
@@ -340,24 +336,6 @@ export function TrialUrgencyBanner({
                     </button>
                   </div>
                 )}
-              </>
-            )}
-
-            {/* STEP 4: THANK YOU MESSAGE */}
-            {step === "THANK_YOU" && (
-              <>
-                <h2 className="text-lg font-semibold tracking-tight text-white">
-                  Thank You for Understanding
-                </h2>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                  We appreciate your cooperation in finalizing workspace production deployment.
-                </p>
-                <button
-                  onClick={() => setStep("DEFAULT")}
-                  className="mt-6 w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
-                >
-                  Back
-                </button>
               </>
             )}
 
