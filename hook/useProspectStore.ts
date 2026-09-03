@@ -13,6 +13,8 @@ export interface ProspectData {
   companyName: string;
   createdAt: string;
   activities: ProspectActivity[];
+  dealSigned?: boolean;
+  handshakeAt?: string;
   appState?: Record<string, any>;
 }
 
@@ -35,6 +37,7 @@ export function useProspectStore(clientSlug: string, companyName: string) {
         clientSlug,
         companyName,
         createdAt: new Date().toISOString(),
+        dealSigned: false,
         activities: [
           {
             id: 1,
@@ -58,6 +61,7 @@ export function useProspectStore(clientSlug: string, companyName: string) {
           clientSlug,
           companyName,
           createdAt: new Date().toISOString(),
+          dealSigned: false,
           activities: [],
         };
 
@@ -70,6 +74,29 @@ export function useProspectStore(clientSlug: string, companyName: string) {
     const updated: ProspectData = {
       ...currentData,
       activities: [newEntry, ...(currentData.activities || [])],
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    setData(updated);
+  };
+
+  const signDeal = () => {
+    if (typeof window === "undefined" || !clientSlug) return;
+
+    const existingStr = localStorage.getItem(STORAGE_KEY);
+    const currentData: ProspectData = existingStr
+      ? JSON.parse(existingStr)
+      : data || {
+          clientSlug,
+          companyName,
+          createdAt: new Date().toISOString(),
+          activities: [],
+        };
+
+    const updated: ProspectData = {
+      ...currentData,
+      dealSigned: true,
+      handshakeAt: new Date().toISOString(),
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -103,7 +130,6 @@ export function useProspectStore(clientSlug: string, companyName: string) {
 
       if (response.ok && result.success) {
         console.log("[MIGRATION SUCCESS]", result);
-        // Wipe local trap storage now that production DB holds the source of truth
         if (typeof window !== "undefined") {
           localStorage.removeItem(STORAGE_KEY);
         }
@@ -118,5 +144,5 @@ export function useProspectStore(clientSlug: string, companyName: string) {
     }
   };
 
-  return { data, recordActivity, getDumpForMigration, migrateToProduction };
+  return { data, recordActivity, signDeal, getDumpForMigration, migrateToProduction };
 }

@@ -169,14 +169,16 @@ export default function ShowcasePage({
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
-      {/* 1. Client-Side Trial Urgency Banner */}
-      {prospectData?.createdAt && (
-        <div className="fixed top-0 left-0 right-0 z-40">
-          <TrialUrgencyBanner
-            createdAt={prospectData.createdAt}
-            onUpgradeClick={migrateToProduction}
-          />
-        </div>
+    {prospectData?.createdAt && (
+      <div className="fixed top-0 left-0 right-0 z-40">
+        <TrialUrgencyBanner
+          createdAt={prospectData.createdAt}
+          handshakeAt={prospectData.handshakeAt}
+          dealSigned={prospectData.dealSigned}
+          activityCount={prospectData.activities?.length || 0}
+          onUpgradeClick={migrateToProduction}
+        />
+      </div>
       )}
 
       {/* Loading Overlay */}
