@@ -17,6 +17,8 @@ export function TrialUrgencyBanner({ createdAt, onUpgradeClick }: TrialUrgencyBa
   }>({ days: 7, hours: 0, minutes: 0, isExpired: false, isUrgent: false });
 
   useEffect(() => {
+    if (!createdAt) return; // Prevent NaN calculations before state hydrates
+
     const calculateTime = () => {
       const created = new Date(createdAt).getTime();
       const trialDurationMs = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -46,6 +48,9 @@ export function TrialUrgencyBanner({ createdAt, onUpgradeClick }: TrialUrgencyBa
     const interval = setInterval(calculateTime, 60000);
     return () => clearInterval(interval);
   }, [createdAt]);
+
+  // Don't display hard lock before timestamp hydrates
+  if (!createdAt) return null;
 
   // HARD PAYWALL LOCKOUT OVERLAY (Expired)
   if (timeLeft.isExpired) {

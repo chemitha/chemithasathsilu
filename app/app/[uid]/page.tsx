@@ -34,7 +34,7 @@ export default function ShowcasePage({
   const companyName = slug ? slug.replace(/-/g, ' ').toUpperCase() : 'CLIENT';
 
   // Local Data Trap Initialization (Zero DB overhead)
-  const { data: prospectData, recordActivity } = useProspectStore(slug, companyName);
+  const { data: prospectData, recordActivity, migrateToProduction } = useProspectStore(slug, companyName);
 
   // 1. Force dynamic document title update
   useEffect(() => {
@@ -170,9 +170,14 @@ export default function ShowcasePage({
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
       {/* 1. Client-Side Trial Urgency Banner */}
-      <div className="fixed top-0 left-0 right-0 z-40">
-        <TrialUrgencyBanner createdAt={prospectData?.createdAt} />
-      </div>
+      {prospectData?.createdAt && (
+        <div className="fixed top-0 left-0 right-0 z-40">
+          <TrialUrgencyBanner
+            createdAt={prospectData.createdAt}
+            onUpgradeClick={migrateToProduction}
+          />
+        </div>
+      )}
 
       {/* Loading Overlay */}
       {isLoading && (
