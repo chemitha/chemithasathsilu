@@ -78,7 +78,12 @@ export function TrialUrgencyBanner({
 
   if (!createdAt && !handshakeAt) return null;
 
-  // HARD PAYWALL LOCKOUT OVERLAY (Expired)
+  // 1. If deal isn't signed, return early immediately (hide banner & paywall in outreach mode)
+  if (!dealSigned) {
+    return null;
+  }
+
+  // 2. HARD PAYWALL LOCKOUT OVERLAY (Only reached if dealSigned is true and grace period expired)
   if (timeLeft.isExpired) {
     return (
       <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/90 backdrop-blur-md p-6 text-white text-center">
@@ -89,30 +94,23 @@ export function TrialUrgencyBanner({
             </svg>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white">
-            {dealSigned ? "Production Migration Grace Period Ended" : "Sandbox Evaluation Expired"}
+            Production Migration Grace Period Ended
           </h2>
           <p className="mt-3 text-sm text-zinc-400">
-            {dealSigned
-              ? "The 7-day post-handshake period for this workspace has concluded. Complete final balance payment to proceed."
-              : "Your evaluation environment for this workspace build has reached its limit. Connect to convert to production access."}
+            The 7-day post-handshake period for this workspace has concluded. Complete final balance payment to proceed.
           </p>
           <button
             onClick={onUpgradeClick}
             className="mt-6 w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:brightness-110"
           >
-            {dealSigned ? "Complete Final Payment" : "Claim Production Workspace"}
+            Complete Final Payment
           </button>
         </div>
       </div>
     );
   }
 
-  // HIDDEN EXPIRATION: Banner is invisible during outreach, visible only after deal is signed
-  if (!dealSigned) {
-    return null;
-  }
-
-  // VISIBLE HANDSHAKE BANNER
+  // 3. VISIBLE HANDSHAKE BANNER
   return (
     <div className="w-full py-2.5 px-4 text-center text-xs font-medium bg-amber-500/10 text-amber-400 border-b border-amber-500/20">
       <span>
