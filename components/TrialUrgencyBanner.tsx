@@ -8,6 +8,7 @@ interface TrialUrgencyBannerProps {
   dealSigned?: boolean;
   activityCount?: number;
   onUpgradeClick?: () => void;
+  onRequestTimeClick?: () => void;
 }
 
 export function TrialUrgencyBanner({
@@ -16,6 +17,7 @@ export function TrialUrgencyBanner({
   dealSigned = false,
   activityCount = 0,
   onUpgradeClick,
+  onRequestTimeClick,
 }: TrialUrgencyBannerProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -23,6 +25,8 @@ export function TrialUrgencyBanner({
     minutes: number;
     isExpired: boolean;
   }>({ days: 14, hours: 0, minutes: 0, isExpired: false });
+
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (!createdAt && !handshakeAt) return;
@@ -68,7 +72,7 @@ export function TrialUrgencyBanner({
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-      setTimeLeft({ days, hours, minutes, isExpired: false });
+        setTimeLeft({ days, hours, minutes, isExpired: false });
     };
 
     calculateTime();
@@ -78,52 +82,66 @@ export function TrialUrgencyBanner({
 
   if (!createdAt && !handshakeAt) return null;
 
-  // 1. If deal isn't signed, return early immediately (hide banner & paywall in outreach mode)
+  // 1. Return early immediately if deal isn't signed
   if (!dealSigned) {
     return null;
   }
 
-  // 2. HARD PAYWALL LOCKOUT OVERLAY (Only reached if dealSigned is true and grace period expired)
+  // 2. HARD PAYWALL LOCKOUT OVERLAY
   if (timeLeft.isExpired) {
     return (
-      <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/90 backdrop-blur-md p-6 text-white text-center">
-        <div className="max-w-md rounded-2xl border border-red-500/30 bg-zinc-900 p-8 shadow-2xl">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 text-red-500">
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m12-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/80 backdrop-blur-md p-6 text-white">
+        <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-center shadow-2xl">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 border border-zinc-800 text-white">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">
-            Production Migration Grace Period Ended
+          <h2 className="text-lg font-semibold tracking-tight text-white">
+            Handshake Grace Period Ended
           </h2>
-          <p className="mt-3 text-sm text-zinc-400">
-            The 7-day post-handshake period for this workspace has concluded. Complete final balance payment to proceed.
+          <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
+            The 7-day deployment grace period for this workspace has expired. Complete migration to maintain continuous access.
           </p>
-          <button
-            onClick={onUpgradeClick}
-            className="mt-6 w-full rounded-xl bg-gradient-to-r from-red-600 to-amber-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:brightness-110"
-          >
-            Complete Final Payment
-          </button>
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              onClick={onRequestTimeClick || onUpgradeClick}
+              className="w-full rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+            >
+              Request More Time
+            </button>
+            <button
+              onClick={() => setDismissed(true)}
+              className="w-full rounded-xl bg-zinc-900 px-4 py-2.5 text-xs font-medium text-zinc-400 border border-zinc-800 transition hover:bg-zinc-800 hover:text-white active:scale-[0.98]"
+            >
+              Fine, Got It
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // 3. VISIBLE HANDSHAKE BANNER
+  if (dismissed) return null;
+
+  // 3. FLOATING CORNER PILL
   return (
-    <div className="w-full py-2.5 px-4 text-center text-xs font-medium bg-amber-500/10 text-amber-400 border-b border-amber-500/20">
-      <span>
-        🤝 <strong>PRODUCTION HANDSHAKE ACTIVE:</strong> Grace period for full deployment balance expires in{" "}
-        <span className="font-bold text-white">
+    <div className="fixed bottom-5 right-5 z-[9999] flex items-center gap-3 rounded-full border border-zinc-800 bg-zinc-950/90 py-2 px-3.5 text-xs text-zinc-300 shadow-xl backdrop-blur-md">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+      </span>
+      <span className="font-medium">
+        Handshake Active:{" "}
+        <strong className="text-white">
           {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
-        </span>.
+        </strong>
       </span>
       <button
         onClick={onUpgradeClick}
-        className="ml-3 underline decoration-amber-500/50 underline-offset-2 hover:text-white"
+        className="ml-1 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-black transition hover:bg-zinc-200 active:scale-95"
       >
-        Complete Migration →
+        Complete
       </button>
     </div>
   );
