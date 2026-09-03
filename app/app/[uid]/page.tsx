@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Script from 'next/script';
 import Image from 'next/image';
+import { useProspectStore } from '@/hook/useProspectStore';
+import { TrialUrgencyBanner } from '@/components/TrialUrgencyBanner';
 
 interface TelemetryData {
   state: string;
@@ -28,14 +30,17 @@ export default function ShowcasePage({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resolvedParams = React.use(params);
+  const slug = resolvedParams?.uid || '';
+  const companyName = slug ? slug.replace(/-/g, ' ').toUpperCase() : 'CLIENT';
+
+  // Local Data Trap Initialization (Zero DB overhead)
+  const { data: prospectData, recordActivity } = useProspectStore(slug, companyName);
 
   // 1. Force dynamic document title update
   useEffect(() => {
     if (!resolvedParams?.uid) return;
 
-    const slug = resolvedParams.uid;
     const formattedTitle = `${slug.toUpperCase()} | Chemitha Sathsilu`;
-    
     document.title = formattedTitle;
 
     const timeout = setTimeout(() => {
@@ -43,18 +48,17 @@ export default function ShowcasePage({
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [resolvedParams?.uid]);
+  }, [resolvedParams?.uid, slug]);
 
   // Helper to safely append ?slug=<uid> to any URL
-  const buildUrlWithSlug = (baseUrlStr: string, slug: string): string => {
+  const buildUrlWithSlug = (baseUrlStr: string, slugStr: string): string => {
     try {
       const urlObj = new URL(baseUrlStr);
-      urlObj.searchParams.set('slug', slug);
+      urlObj.searchParams.set('slug', slugStr);
       return urlObj.toString();
     } catch {
-      // Fallback string concatenation if relative path or malformed URL
       const separator = baseUrlStr.includes('?') ? '&' : '?';
-      return `${baseUrlStr}${separator}slug=${encodeURIComponent(slug)}`;
+      return `${baseUrlStr}${separator}slug=${encodeURIComponent(slugStr)}`;
     }
   };
 
@@ -63,15 +67,16 @@ export default function ShowcasePage({
     if (!resolvedParams?.uid) return;
 
     async function initShowcase() {
-      const slug = resolvedParams.uid;
-
       // Ping telemetry endpoint on the engine backend
       try {
-        const trackRes = await fetch(`https://b2b-micro-saas-engine.onrender.com/api/track-view`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug }),
-        });
+        const trackRes = await fetch(
+          `https://b2b-micro-saas-engine.onrender.com/api/track-view`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug }),
+          }
+        );
         if (trackRes.ok) {
           const trackData = await trackRes.json();
           setTelemetry(trackData);
@@ -79,6 +84,9 @@ export default function ShowcasePage({
       } catch (err) {
         console.error('Telemetry tracking failed:', err);
       }
+
+      // Record local view event in browser localStorage
+      recordActivity(`Opened showcase session for ${companyName}`);
 
       // Fetch showcase URL route
       let rawTargetUrl: string | null = null;
@@ -98,13 +106,13 @@ export default function ShowcasePage({
 
       // Use target URL or construct primary fallback domain
       const baseUrl = rawTargetUrl || `https://demo-${slug}.vercel.app`;
-      
+
       // Ensure ?slug= query parameter is passed into the iframe
       setTargetUrl(buildUrlWithSlug(baseUrl, slug));
     }
 
     initShowcase();
-  }, [resolvedParams?.uid]);
+  }, [resolvedParams?.uid, slug, companyName]);
 
   // Timeout logic for iframe loading
   useEffect(() => {
@@ -134,17 +142,21 @@ export default function ShowcasePage({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`https://b2b-micro-saas-engine.onrender.com/api/request-extension`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slug: resolvedParams.uid,
-          reason: requestReason,
-        }),
-      });
+      const res = await fetch(
+        `https://b2b-micro-saas-engine.onrender.com/api/request-extension`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug: resolvedParams.uid,
+            reason: requestReason,
+          }),
+        }
+      );
 
       if (res.ok) {
         setExtensionRequested(true);
+        recordActivity(`Submitted +24h extension request: "${requestReason}"`);
       }
     } catch (err) {
       console.error('Failed to request extension:', err);
@@ -154,27 +166,13 @@ export default function ShowcasePage({
   };
 
   const isLocked = telemetry?.locked || telemetry?.state === 'EXPIRED';
-  const showTrialBanner =
-    telemetry &&
-    (telemetry.state === 'ACTIVE_TRIAL' || telemetry.state === 'EXTENDED') &&
-    !isLocked;
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
-      {/* Dynamic Trial Countdown Banner */}
-      {showTrialBanner && (
-        <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-2 bg-neutral-900/90 backdrop-blur-md border-b border-white/10 text-xs text-neutral-300">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Active Client Trial</span>
-          </div>
-          <div className="font-mono text-neutral-400">
-            {telemetry?.expiresAt
-              ? `Expires: ${new Date(telemetry.expiresAt).toLocaleDateString()}`
-              : 'Trial Period Active'}
-          </div>
-        </div>
-      )}
+      {/* 1. Client-Side Trial Urgency Banner */}
+      <div className="fixed top-0 left-0 right-0 z-40">
+        <TrialUrgencyBanner createdAt={prospectData?.createdAt} />
+      </div>
 
       {/* Loading Overlay */}
       {isLoading && (
@@ -182,7 +180,7 @@ export default function ShowcasePage({
           <div className="flex flex-col items-center">
             <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3 pointer-events-none" />
             <span className="text-xs text-neutral-400 font-mono tracking-wider pointer-events-none">
-              LOADING APP...
+              LOADING {companyName}...
             </span>
           </div>
 
@@ -208,11 +206,11 @@ export default function ShowcasePage({
           key={reloadKey}
           src={targetUrl}
           className={`w-full h-full border-0 relative z-10 ${
-            showTrialBanner ? 'pt-8' : ''
-          } ${isLocked ? 'blur-md pointer-events-none' : ''}`}
+            isLocked ? 'blur-md pointer-events-none' : ''
+          }`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
           allow="geolocation; microphone; camera; clipboard-write; clipboard-read; autoplay"
-          title={`Showcase - ${resolvedParams.uid}`}
+          title={`Showcase - ${slug}`}
           onLoad={handleIframeLoad}
         />
       )}
@@ -228,7 +226,7 @@ export default function ShowcasePage({
               Trial Period Expired
             </h2>
             <p className="text-sm text-neutral-400 mb-6">
-              The preview window for this showcase has ended. Request an extension or unlock permanent access.
+              The preview window for {companyName} has ended. Request an extension or unlock permanent access.
             </p>
 
             {extensionRequested ? (
@@ -278,7 +276,7 @@ export default function ShowcasePage({
       </div>
 
       {/* Anti-DevTools Protection */}
-      <Script src="/anti-devtools.js" strategy="afterInteractive" />
+      {/* <Script src="/anti-devtools.js" strategy="afterInteractive" /> */}
     </div>
   );
 }

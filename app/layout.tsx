@@ -20,17 +20,17 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/favicon-d.ico",
+        url: "/assets/favicon-d.ico",
         media: "(prefers-color-scheme: light)",
         type: "image/x-icon",
       },
       {
-        url: "/favicon-l.ico",
+        url: "/assets/favicon-l.ico",
         media: "(prefers-color-scheme: dark)",
         type: "image/x-icon",
       },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/assets/favicon.ico",
   },
 };
 
