@@ -58,11 +58,12 @@ export function TrialUrgencyBanner({
         const anchor = handshakeAt ? new Date(handshakeAt).getTime() : new Date(createdAt).getTime();
         const dealDurationMs = 7 * 24 * 60 * 60 * 1000;
         
-        // FIX: If extended, calculate 24h from whichever is LATER: original expiration or activation time
         let expiresAt = anchor + dealDurationMs;
         if (hasUsedFirstExtension && firstExtensionMs > 0) {
-          const extensionStart = Math.max(expiresAt, firstExtensionMs);
-          expiresAt = extensionStart + 24 * 60 * 60 * 1000;
+          // If claimed AFTER expiration, add 24h from claim time. If BEFORE, append 24h to original expiry.
+          expiresAt = now < expiresAt
+            ? expiresAt + 24 * 60 * 60 * 1000
+            : firstExtensionMs + 24 * 60 * 60 * 1000;
         }
 
         const diff = expiresAt - now;

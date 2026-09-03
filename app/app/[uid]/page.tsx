@@ -176,6 +176,7 @@ export default function ShowcasePage({
           handshakeAt={prospectData.handshakeAt}
           dealSigned={prospectData.dealSigned}
           activityCount={prospectData.activities?.length || 0}
+          workspaceId={slug}
           onUpgradeClick={migrateToProduction}
         />
       </div>
