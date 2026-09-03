@@ -23,8 +23,9 @@ export function TrialUrgencyBanner({
     days: number;
     hours: number;
     minutes: number;
+    seconds: number;
     isExpired: boolean;
-  }>({ days: 14, hours: 0, minutes: 0, isExpired: false });
+  }>({ days: 14, hours: 0, minutes: 0, seconds: 0, isExpired: false });
 
   const [showModal, setShowModal] = useState(false);
 
@@ -32,7 +33,7 @@ export function TrialUrgencyBanner({
   const [hasUsedFirstExtension, setHasUsedFirstExtension] = useState(false);
   const [firstExtensionMs, setFirstExtensionMs] = useState<number>(0);
   const [step, setStep] = useState<"DEFAULT" | "CONFIRM_24H" | "REASONS_FORM" | "THANK_YOU">("DEFAULT");
-  
+
   // Reasons Form State
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [customReason, setCustomReason] = useState("");
@@ -57,27 +58,27 @@ export function TrialUrgencyBanner({
       if (dealSigned) {
         const anchor = handshakeAt ? new Date(handshakeAt).getTime() : new Date(createdAt).getTime();
         const dealDurationMs = 7 * 24 * 60 * 60 * 1000;
-        
+
         let expiresAt = anchor + dealDurationMs;
         if (hasUsedFirstExtension && firstExtensionMs > 0) {
-          // If claimed AFTER expiration, add 24h from claim time. If BEFORE, append 24h to original expiry.
           expiresAt = now < expiresAt
             ? expiresAt + 24 * 60 * 60 * 1000
             : firstExtensionMs + 24 * 60 * 60 * 1000;
         }
 
-        const diff = expiresAt - now;
+        const diff = Math.max(0, expiresAt - now);
 
         if (diff <= 0) {
-          setTimeLeft({ days: 0, hours: 0, minutes: 0, isExpired: true });
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
           return;
         }
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / 1000 / 60) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
 
-        setTimeLeft({ days, hours, minutes, isExpired: false });
+        setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
         return;
       }
 
@@ -87,30 +88,28 @@ export function TrialUrgencyBanner({
 
       const created = new Date(createdAt).getTime();
       const expiresAt = created + trialDurationMs;
-      const diff = expiresAt - now;
+      const diff = Math.max(0, expiresAt - now);
 
       if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, isExpired: true });
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
         return;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
 
-      setTimeLeft({ days, hours, minutes, isExpired: false });
+      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
     };
 
     calculateTime();
-    const interval = setInterval(calculateTime, 60000);
+    const interval = setInterval(calculateTime, 1000);
     return () => clearInterval(interval);
   }, [createdAt, handshakeAt, dealSigned, activityCount, hasUsedFirstExtension, firstExtensionMs]);
 
   if (!createdAt && !handshakeAt) return null;
-
-  if (!dealSigned) {
-    return null;
-  }
+  if (!dealSigned) return null;
 
   const isLockedOut = timeLeft.isExpired;
 
@@ -176,7 +175,7 @@ export function TrialUrgencyBanner({
           {isLockedOut ? "Grace Period Expired" : "Handshake Active:"}{" "}
           {!isLockedOut && (
             <strong className="text-white">
-              {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
+              {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
             </strong>
           )}
         </span>
@@ -187,7 +186,7 @@ export function TrialUrgencyBanner({
           }}
           className="ml-1 cursor-pointer rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-black transition hover:bg-zinc-200 active:scale-95"
         >
-          {isLockedOut ? "Resolve" : "Manage"}
+          {isLockedOut ? "Resolve" : "Status"}
         </button>
       </div>
 
@@ -195,7 +194,7 @@ export function TrialUrgencyBanner({
       {(showModal || isLockedOut) && (
         <div className="fixed inset-0 z-[999999] flex cursor-default items-center justify-center bg-black/80 backdrop-blur-md p-6 text-white">
           <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-center shadow-2xl">
-            
+
             {/* STEP 1: DEFAULT / MAIN OVERLAY */}
             {step === "DEFAULT" && (
               <>
@@ -205,26 +204,37 @@ export function TrialUrgencyBanner({
                   </svg>
                 </div>
                 <h2 className="text-lg font-semibold tracking-tight text-white">
-                  {isLockedOut ? "Handshake Grace Period Ended" : "Production Handshake Details"}
+                  {isLockedOut ? "Handshake Grace Period Ended" : "Production Handshake Active"}
                 </h2>
                 <p className="mt-2 text-xs leading-relaxed text-zinc-400">
                   {isLockedOut
-                    ? "The deployment grace period for this workspace has concluded. Finalize migration to maintain uninterrupted access."
-                    : `Workspace grace period active. You have ${timeLeft.days}d ${timeLeft.hours}h remaining before payment finalization.`}
+                    ? "The evaluation period for this workspace has concluded. Request extended evaluation time or finalize deployment setup."
+                    : `Your workspace evaluation is active. You have ${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m remaining before production setup finalization.`}
                 </p>
                 <div className="mt-6 flex flex-col gap-2.5">
-                  <button
-                    onClick={handleRequestTimeClick}
-                    className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
-                  >
-                    Request More Time
-                  </button>
-                  <button
-                    onClick={() => setStep("THANK_YOU")}
-                    className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
-                  >
-                    Fine, Got It
-                  </button>
+                  {isLockedOut ? (
+                    <>
+                      <button
+                        onClick={handleRequestTimeClick}
+                        className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                      >
+                        Request More Time
+                      </button>
+                      <button
+                        onClick={() => setStep("THANK_YOU")}
+                        className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
+                      >
+                        I Understand
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setStep("THANK_YOU")}
+                      className="w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                    >
+                      I Understand
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -236,7 +246,7 @@ export function TrialUrgencyBanner({
                   Grant Additional 24 Hours?
                 </h2>
                 <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                  We can extend your workspace evaluation for strictly <strong className="text-white">24 extra hours</strong>. Would you like to proceed with this standard extension?
+                  We can extend your workspace evaluation for strictly <strong className="text-white">24 extra hours</strong>. Would you like to apply this standard extension?
                 </p>
                 <div className="mt-6 flex flex-col gap-2.5">
                   <button
@@ -249,7 +259,7 @@ export function TrialUrgencyBanner({
                     onClick={() => setStep("DEFAULT")}
                     className="w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
                   >
-                    Cancel
+                    Back
                   </button>
                 </div>
               </>
@@ -259,12 +269,12 @@ export function TrialUrgencyBanner({
             {step === "REASONS_FORM" && (
               <>
                 <h2 className="text-lg font-semibold tracking-tight text-white">
-                  Request Additional Time
+                  Request Additional Extension
                 </h2>
                 <p className="mt-2 text-xs text-zinc-400">
-                  Select your reason for extension so our core team can review your workspace:
+                  Select your primary reason for extension so our core team can review your workspace:
                 </p>
-                
+
                 {!telegramSent ? (
                   <>
                     <div className="mt-4 flex flex-col gap-2 text-left text-xs">
@@ -286,7 +296,7 @@ export function TrialUrgencyBanner({
                           <input
                             type="checkbox"
                             checked={selectedReasons.includes(reason)}
-                            onChange={() => {}} // Controlled by outer div onClick
+                            onChange={() => {}}
                             className="pointer-events-none rounded border-zinc-700 bg-zinc-900 text-white focus:ring-0"
                           />
                           <span>{reason}</span>
@@ -320,13 +330,13 @@ export function TrialUrgencyBanner({
                 ) : (
                   <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center">
                     <p className="text-xs text-zinc-300">
-                      Request submitted to founder admin. Your workspace context was forwarded for direct review.
+                      Request submitted to admin. Your workspace details have been sent for direct review.
                     </p>
                     <button
                       onClick={() => setStep("DEFAULT")}
                       className="mt-4 w-full cursor-pointer rounded-xl bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-zinc-200"
                     >
-                      Close
+                      Back
                     </button>
                   </div>
                 )}
@@ -343,13 +353,10 @@ export function TrialUrgencyBanner({
                   We appreciate your cooperation in finalizing workspace production deployment.
                 </p>
                 <button
-                  onClick={() => {
-                    setShowModal(false);
-                    setStep("DEFAULT");
-                  }}
-                  className="mt-6 w-full cursor-pointer rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black transition hover:bg-zinc-200 active:scale-[0.98]"
+                  onClick={() => setStep("DEFAULT")}
+                  className="mt-6 w-full cursor-pointer rounded-xl border border-white/20 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10 active:scale-[0.98]"
                 >
-                  Close Window
+                  Back
                 </button>
               </>
             )}
