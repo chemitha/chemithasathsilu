@@ -17,10 +17,18 @@ export async function POST(req: Request) {
     const [action, workspaceId] = data.split(":");
 
     if (action === "grant_24h") {
-      // 1. Acknowledge button click in Telegram
-      await answerCallback(botToken!, callbackQueryId, "Granted +24h Extension!");
+      // 1. Extend lead access via Engine API
+      try {
+        await fetch(`https://b2b-micro-saas-engine.onrender.com/api/convert-lead`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: workspaceId, state: 'IN_EVALUATION' }),
+        });
+      } catch (err) {
+        console.error("Failed to sync grant status with engine DB:", err);
+      }
 
-      // 2. Edit Telegram message to reflect approval
+      await answerCallback(botToken!, callbackQueryId, "Granted +24h Extension!");
       await editTelegramMessage(
         botToken!,
         chatId,
@@ -30,14 +38,11 @@ export async function POST(req: Request) {
     } else if (action === "decline_delete") {
       await answerCallback(botToken!, callbackQueryId, "Deleting Vercel Project...");
 
-      // 3. Delete Project from Vercel via REST API
       let vercelStatus = "Project Deleted from Vercel";
       if (vercelToken) {
         const vercelRes = await fetch(`https://api.vercel.com/v9/projects/${workspaceId}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${vercelToken}`,
-          },
+          headers: { Authorization: `Bearer ${vercelToken}` },
         });
 
         if (!vercelRes.ok) {
@@ -45,7 +50,6 @@ export async function POST(req: Request) {
         }
       }
 
-      // 4. Update Telegram message to reflect termination
       await editTelegramMessage(
         botToken!,
         chatId,

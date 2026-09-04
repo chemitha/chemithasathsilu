@@ -148,6 +148,25 @@ export default function ShowcasePage({
     initShowcase();
   }, [resolvedParams?.uid, slug, companyName, recordActivity]);
 
+  // Real-Time Mid-Session Expiration Monitor
+  useEffect(() => {
+    if (!telemetry?.expiresAt || accessDenied) return;
+
+    const checkExpiration = () => {
+      const expiryTime = new Date(telemetry.expiresAt!).getTime();
+      const nowTime = Date.now();
+
+      if (expiryTime <= nowTime) {
+        setAccessDenied(true);
+      }
+    };
+
+    checkExpiration();
+    const interval = setInterval(checkExpiration, 5000);
+
+    return () => clearInterval(interval);
+  }, [telemetry?.expiresAt, accessDenied]);
+
   // Timeout logic for iframe loading
   useEffect(() => {
     let timer: NodeJS.Timeout;
