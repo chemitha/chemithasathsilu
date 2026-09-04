@@ -218,6 +218,27 @@ export default function ShowcasePage({
     }
   };
 
+  const handleProductionUpgrade = async () => {
+    try {
+      // 1. Mark lead as DEAL_CLOSED in the engine backend
+      await fetch(`https://b2b-micro-saas-engine.onrender.com/api/convert-lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          state: 'DEAL_CLOSED',
+        }),
+      });
+
+      recordActivity(`Initiated production booking via Cal.com`);
+    } catch (err) {
+      console.error('Failed to convert lead on booking initiation:', err);
+    } finally {
+      // 2. Direct client to your Cal.com scheduling link
+      window.open('https://cal.com/chemithasathsilu/30min', '_blank');
+    }
+  };
+
   const isLocked = accessDenied || telemetry?.locked || telemetry?.state === 'EXPIRED';
 
   return (
@@ -230,7 +251,7 @@ export default function ShowcasePage({
             dealSigned={telemetry.dealSigned ?? prospectData?.dealSigned}
             activityCount={prospectData?.activities?.length || 0}
             workspaceId={slug}
-            onUpgradeClick={migrateToProduction}
+            onUpgradeClick={handleProductionUpgrade}
           />
         </div>
       )}
