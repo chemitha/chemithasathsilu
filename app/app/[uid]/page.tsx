@@ -28,6 +28,7 @@ export default function ShowcasePage({
 
   // Telemetry & Paywall States
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [extensionRequested, setExtensionRequested] = useState(false);
   const [requestReason, setRequestReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,12 +66,39 @@ export default function ShowcasePage({
     }
   };
 
-  // 2. Fetch live deployment & ping telemetry tracking
+  // 2. Fetch live deployment, access gatekeeping status, & ping telemetry tracking
   useEffect(() => {
     if (!resolvedParams?.uid) return;
 
     async function initShowcase() {
-      // Ping telemetry endpoint on the engine backend
+      // 2A. Check Access Enforcer Status on Express Backend
+      try {
+        const accessRes = await fetch(
+          `https://b2b-micro-saas-engine.onrender.com/api/access-status`,
+          {
+            method: 'GET',
+            headers: {
+              'x-lead-slug': slug,
+            },
+          }
+        );
+
+        if (accessRes.status === 402 || accessRes.status === 403) {
+          setAccessDenied(true);
+        } else if (accessRes.ok) {
+          const accessData = await accessRes.json();
+          if (accessData?.lead?.expiresAt) {
+            setTelemetry((prev) => ({
+              ...(prev || { state: 'ACTIVE', locked: false }),
+              expiresAt: accessData.lead.expiresAt,
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Access status check failed:', err);
+      }
+
+      // 2B. Ping telemetry endpoint on the engine backend
       try {
         const trackRes = await fetch(
           `https://b2b-micro-saas-engine.onrender.com/api/track-view`,
@@ -83,6 +111,9 @@ export default function ShowcasePage({
         if (trackRes.ok) {
           const trackData = await trackRes.json();
           setTelemetry(trackData);
+          if (trackData.locked || trackData.state === 'EXPIRED') {
+            setAccessDenied(true);
+          }
         }
       } catch (err) {
         console.error('Telemetry tracking failed:', err);
@@ -115,7 +146,7 @@ export default function ShowcasePage({
     }
 
     initShowcase();
-  }, [resolvedParams?.uid, slug, companyName]);
+  }, [resolvedParams?.uid, slug, companyName, recordActivity]);
 
   // Timeout logic for iframe loading
   useEffect(() => {
@@ -168,22 +199,22 @@ export default function ShowcasePage({
     }
   };
 
-  const isLocked = telemetry?.locked || telemetry?.state === 'EXPIRED';
+  const isLocked = accessDenied || telemetry?.locked || telemetry?.state === 'EXPIRED';
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
-    {telemetry && (
-      <div className="fixed top-0 left-0 right-0 z-40">
-        <TrialUrgencyBanner
-          createdAt={telemetry.firstVisitedAt || telemetry.createdAt || prospectData?.createdAt}
-          expiresAt={telemetry.expiresAt}
-          dealSigned={telemetry.dealSigned ?? prospectData?.dealSigned}
-          activityCount={prospectData?.activities?.length || 0}
-          workspaceId={slug}
-          onUpgradeClick={migrateToProduction}
-        />
-      </div>
-    )}
+      {telemetry && (
+        <div className="fixed top-0 left-0 right-0 z-40">
+          <TrialUrgencyBanner
+            createdAt={telemetry.firstVisitedAt || telemetry.createdAt || prospectData?.createdAt}
+            expiresAt={telemetry.expiresAt}
+            dealSigned={telemetry.dealSigned ?? prospectData?.dealSigned}
+            activityCount={prospectData?.activities?.length || 0}
+            workspaceId={slug}
+            onUpgradeClick={migrateToProduction}
+          />
+        </div>
+      )}
 
       {/* Loading Overlay */}
       {isLoading && (
