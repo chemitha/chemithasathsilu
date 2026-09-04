@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 
 interface TrialUrgencyBannerProps {
-  createdAt: string;
+  createdAt?: string;
+  expiresAt?: string;
   handshakeAt?: string;
   dealSigned?: boolean;
   activityCount?: number;
@@ -13,6 +14,7 @@ interface TrialUrgencyBannerProps {
 
 export function TrialUrgencyBanner({
   createdAt,
+  expiresAt,
   handshakeAt,
   dealSigned = false,
   activityCount = 0,
@@ -50,35 +52,61 @@ export function TrialUrgencyBanner({
   }, [workspaceId]);
 
   useEffect(() => {
-    if (!createdAt && !handshakeAt) return;
-
-    const calculateTime = () => {
-      const now = Date.now();
-
-      if (dealSigned) {
-        const anchor = handshakeAt ? new Date(handshakeAt).getTime() : new Date(createdAt).getTime();
-        const dealDurationMs = 7 * 24 * 60 * 60 * 1000;
-
-        let expiresAt = anchor + dealDurationMs;
-        if (hasUsedFirstExtension && firstExtensionMs > 0) {
-          expiresAt = now < expiresAt
-            ? expiresAt + 24 * 60 * 60 * 1000
-            : firstExtensionMs + 24 * 60 * 60 * 1000;
-        }
-
-        const diff = Math.max(0, expiresAt - now);
+    // If expiresAt is provided by server telemetry, use it as the single source of truth
+    if (expiresAt) {
+      const calculateTime = () => {
+        const now = Date.now();
+        const target = new Date(expiresAt).getTime();
+        const diff = Math.max(0, target - now);
 
         if (diff <= 0) {
           setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
           return;
         }
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / 1000 / 60) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+          isExpired: false,
+        });
+      };
+
+      calculateTime();
+      const interval = setInterval(calculateTime, 1000);
+      return () => clearInterval(interval);
+    }
+
+    // Fallback: local anchor calculation if expiresAt is not yet supplied by DB
+    if (!createdAt && !handshakeAt) return;
+
+    const calculateTime = () => {
+      const now = Date.now();
+
+      if (dealSigned) {
+        const anchor = handshakeAt ? new Date(handshakeAt).getTime() : new Date(createdAt!).getTime();
+        const dealDurationMs = 7 * 24 * 60 * 60 * 1000;
+
+        let localExpiresAt = anchor + dealDurationMs;
+        if (hasUsedFirstExtension && firstExtensionMs > 0) {
+          localExpiresAt = now < localExpiresAt
+            ? localExpiresAt + 24 * 60 * 60 * 1000
+            : firstExtensionMs + 24 * 60 * 60 * 1000;
+        }
+
+        const diff = Math.max(0, localExpiresAt - now);
+
+        if (diff <= 0) {
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
+          return;
+        }
+
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((diff / 1000 / 60) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
 
-        setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
+        setTimeLeft({ days: Math.floor(diff / (1000 * 60 * 60 * 24)), hours, minutes, seconds, isExpired: false });
         return;
       }
 
@@ -86,29 +114,28 @@ export function TrialUrgencyBanner({
       const allowedDays = isHighUsage ? 7 : 14;
       const trialDurationMs = allowedDays * 24 * 60 * 60 * 1000;
 
-      const created = new Date(createdAt).getTime();
-      const expiresAt = created + trialDurationMs;
-      const diff = Math.max(0, expiresAt - now);
+      const created = new Date(createdAt!).getTime();
+      const localExpiresAt = created + trialDurationMs;
+      const diff = Math.max(0, localExpiresAt - now);
 
       if (diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
       const minutes = Math.floor((diff / 1000 / 60) % 60);
       const seconds = Math.floor((diff / 1000) % 60);
 
-      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
+      setTimeLeft({ days: Math.floor(diff / (1000 * 60 * 60 * 24)), hours, minutes, seconds, isExpired: false });
     };
 
     calculateTime();
     const interval = setInterval(calculateTime, 1000);
     return () => clearInterval(interval);
-  }, [createdAt, handshakeAt, dealSigned, activityCount, hasUsedFirstExtension, firstExtensionMs]);
+  }, [expiresAt, createdAt, handshakeAt, dealSigned, activityCount, hasUsedFirstExtension, firstExtensionMs]);
 
-  if (!createdAt && !handshakeAt) return null;
+  if (!expiresAt && !createdAt && !handshakeAt) return null;
   if (!dealSigned) return null;
 
   const isLockedOut = timeLeft.isExpired;
@@ -121,7 +148,7 @@ export function TrialUrgencyBanner({
     }
   };
 
-  const handleConfirm24h = () => {
+  const handleConfirm24h = async () => {
     const now = Date.now();
     localStorage.setItem(`ext_used_${workspaceId}`, "true");
     localStorage.setItem(`ext_ms_${workspaceId}`, String(now));
@@ -129,6 +156,20 @@ export function TrialUrgencyBanner({
     setFirstExtensionMs(now);
     setShowModal(false);
     setStep("DEFAULT");
+
+    // Call server endpoint to persist extension in PostgreSQL
+    try {
+      const res = await fetch("https://b2b-micro-saas-engine.onrender.com/api/request-24h-extension", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: workspaceId }),
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Failed to apply 24h extension to server:", err);
+    }
   };
 
   const toggleReason = (reason: string) => {

@@ -9,8 +9,11 @@ import { TrialUrgencyBanner } from '@/components/TrialUrgencyBanner';
 interface TelemetryData {
   state: string;
   locked: boolean;
+  createdAt?: string;
+  firstVisitedAt?: string;
   expiresAt?: string;
   remainingMs?: number;
+  dealSigned?: boolean;
 }
 
 export default function ShowcasePage({
@@ -169,18 +172,18 @@ export default function ShowcasePage({
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
-    {prospectData?.createdAt && (
+    {telemetry && (
       <div className="fixed top-0 left-0 right-0 z-40">
         <TrialUrgencyBanner
-          createdAt={prospectData.createdAt}
-          handshakeAt={prospectData.handshakeAt}
-          dealSigned={prospectData.dealSigned}
-          activityCount={prospectData.activities?.length || 0}
+          createdAt={telemetry.firstVisitedAt || telemetry.createdAt || prospectData?.createdAt}
+          expiresAt={telemetry.expiresAt}
+          dealSigned={telemetry.dealSigned ?? prospectData?.dealSigned}
+          activityCount={prospectData?.activities?.length || 0}
           workspaceId={slug}
           onUpgradeClick={migrateToProduction}
         />
       </div>
-      )}
+    )}
 
       {/* Loading Overlay */}
       {isLoading && (
