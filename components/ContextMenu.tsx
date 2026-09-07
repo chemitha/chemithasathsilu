@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import Image from "next/image";
+import {
+  motion,
+  AnimatePresence,
+  PanInfo,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 
 type MenuItem =
   | {
@@ -21,6 +29,25 @@ export function ContextMenu() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic handle bending state
+  const dragY = useMotionValue(0);
+
+  // Calculate sharp arrow bend offset (Y offset between -8px and +8px)
+  const bendY = useTransform(dragY, [-250, 0, 100], [-5, 0, 5], { clamp: true });
+
+  // Map bend offset to sharp pointed line path (M left L center L right)
+  const handlePath = useTransform(bendY, (y) => `M 4 12 L 24 ${12 + y} L 44 12`);
+
+  const visibleRef = useRef(visible);
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
+
+  const isMobileRef = useRef(isMobile);
+  useEffect(() => {
+    isMobileRef.current = isMobile;
+  }, [isMobile]);
 
   useEffect(() => {
     const ua = navigator.userAgent;
@@ -50,15 +77,19 @@ export function ContextMenu() {
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
-      // Strictly trigger on right click (button 2 or contextmenu event)
       if (e.button !== 2 && e.button !== 0 && e.which !== 3) {
+        return;
+      }
+
+      if (isMobileRef.current && visibleRef.current) {
+        e.preventDefault();
         return;
       }
 
       e.preventDefault();
 
-      const menuWidth = isMobile ? 0 : 220;
-      const menuHeight = isMobile ? 0 : 280;
+      const menuWidth = isMobileRef.current ? 0 : 220;
+      const menuHeight = isMobileRef.current ? 0 : 280;
       const x = e.clientX + menuWidth > window.innerWidth ? e.clientX - menuWidth : e.clientX;
       const y = e.clientY + menuHeight > window.innerHeight ? e.clientY - menuHeight : e.clientY;
 
@@ -67,8 +98,17 @@ export function ContextMenu() {
     };
 
     const handleHide = (e?: Event) => {
-      if (e && e.type === "pointerdown" && menuRef.current?.contains(e.target as Node)) {
-        return;
+      if (e && e.type === "pointerdown") {
+        const mouseEvent = e as MouseEvent;
+        const isRightClick = mouseEvent.button === 2 || mouseEvent.which === 3;
+
+        if (isMobileRef.current && isRightClick && visibleRef.current) {
+          return;
+        }
+
+        if (menuRef.current?.contains(e.target as Node)) {
+          return;
+        }
       }
       setVisible(false);
     };
@@ -96,9 +136,7 @@ export function ContextMenu() {
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isMobile]);
-
-  if (!visible) return null;
+  }, []);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -140,9 +178,13 @@ export function ContextMenu() {
       {
         label: "Go to Homepage",
         icon: (
-          <svg className="w-4 h-4 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+          <Image
+            src="/favicon-l.ico"
+            alt="Home"
+            width={16}
+            height={16}
+            className="w-4 h-4 object-contain shrink-0"
+          />
         ),
         action: () => (window.location.href = "/"),
       },
@@ -206,89 +248,124 @@ export function ContextMenu() {
     return baseNav;
   };
 
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    dragY.set(0); // Instantly reset the handle line back to flat state
+    if (info.offset.y > 80 || info.velocity.y > 200) {
+      setVisible(false);
+    }
+  };
+
   const items = getMenuItems();
 
-  // Mobile Bottom Sheet UI
-  if (isMobile) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm transition-opacity">
-        <div
-          ref={menuRef}
-          className="w-full max-w-md bg-[#18131d] border-t border-white/10 rounded-t-2xl p-4 text-[#e0dce6] shadow-2xl animate-in slide-in-from-bottom duration-200 select-none font-sans"
-        >
-          {/* Grab Handle Header */}
-          <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
-
-          <div className="space-y-1">
-            {items.map((item, index) => {
-              if (item.type === "separator") {
-                return <div key={index} className="h-px bg-white/10 my-2" />;
-              }
-
-              return (
-                <div
-                  key={index}
-                  onClick={() => {
-                    if (item.action) item.action();
-                    setVisible(false);
-                  }}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/10 active:bg-white/15 !cursor-pointer transition-colors ${
-                    item.highlight ? "text-red-300 font-medium bg-red-500/10" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {item.icon ? <span className="shrink-0">{item.icon}</span> : <div className="w-4 shrink-0" />}
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </div>
-                  {item.shortcut && <span className="text-neutral-500 text-xs">{item.shortcut}</span>}
-                </div>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={() => setVisible(false)}
-            className="w-full mt-3 py-2.5 text-center text-xs text-neutral-400 font-medium bg-white/5 rounded-xl active:bg-white/10"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop Context Menu UI
   return (
-    <div
-      ref={menuRef}
-      style={{ top: `${position.y}px`, left: `${position.x}px` }}
-      className="fixed z-50 w-56 bg-[#18131d]/95 backdrop-blur-md text-[#e0dce6] rounded-xl shadow-2xl text-[12px] py-1.5 border border-white/10 select-none font-sans !cursor-pointer"
-    >
-      {items.map((item, index) => {
-        if (item.type === "separator") {
-          return <div key={index} className="h-px bg-white/10 my-1.5" />;
-        }
+    <AnimatePresence>
+      {visible && (
+        <>
+          {isMobile ? (
+            /* Mobile Sheet UI */
+            <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-auto overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setVisible(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                ref={menuRef}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0.08, bottom: 0.6 }}
+                onDrag={(_, info) => dragY.set(info.offset.y)}
+                onDragEnd={handleDragEnd}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 350 }}
+                className="relative z-10 w-full max-w-md bg-[#18131d] border-t border-white/10 rounded-t-2xl p-4 pb-32 -mb-28 text-[#e0dce6] shadow-2xl select-none font-sans touch-none"
+              >
+                {/* Dynamic Sharp Arrow Pull Handle */}
+                <div className="flex justify-center mb-2 cursor-grab active:cursor-grabbing">
+                  <svg width="48" height="24" viewBox="0 0 48 24" className="overflow-visible">
+                    <motion.path
+                      d={handlePath}
+                      fill="none"
+                      stroke="rgba(255, 255, 255, 0.4)"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
 
-        return (
-          <div
-            key={index}
-            onClick={() => {
-              if (item.action) item.action();
-              setVisible(false);
-            }}
-            className={`flex items-center justify-between px-3 py-1.5 hover:bg-white/10 !cursor-pointer transition-colors ${
-              item.highlight ? "text-red-300 font-medium bg-red-500/10 hover:bg-red-500/20" : ""
-            }`}
-          >
-            <div className="flex items-center gap-2.5 overflow-hidden !cursor-pointer">
-              {item.icon ? <span className="shrink-0">{item.icon}</span> : <div className="w-3.5 shrink-0" />}
-              <span className="truncate !cursor-pointer">{item.label}</span>
+                <div className="space-y-1">
+                  {items.map((item, index) => {
+                    if (item.type === "separator") {
+                      return <div key={index} className="h-px bg-white/10 my-2" />;
+                    }
+
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          if (item.action) item.action();
+                          setVisible(false);
+                        }}
+                        className={`flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/10 active:bg-white/15 !cursor-pointer transition-colors ${
+                          item.highlight ? "text-red-300 font-medium bg-red-500/10" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {item.icon ? <span className="shrink-0">{item.icon}</span> : <div className="w-4 shrink-0" />}
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </div>
+                        {item.shortcut && <span className="text-neutral-500 text-xs">{item.shortcut}</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
             </div>
-            {item.shortcut && <span className="text-neutral-500 text-[10px] ml-2 shrink-0 !cursor-pointer">{item.shortcut}</span>}
-          </div>
-        );
-      })}
-    </div>
+          ) : (
+            /* Desktop Context Menu UI */
+            <motion.div
+              ref={menuRef}
+              style={{ top: `${position.y}px`, left: `${position.x}px` }}
+              initial={{ opacity: 0, scale: 0.92, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -2 }}
+              transition={{ duration: 0.12, ease: "easeOut" }}
+              className="fixed z-50 w-56 bg-[#18131d]/95 backdrop-blur-md text-[#e0dce6] rounded-xl shadow-2xl text-[12px] py-1.5 border border-white/10 select-none font-sans !cursor-pointer origin-top-left"
+            >
+              {items.map((item, index) => {
+                if (item.type === "separator") {
+                  return <div key={index} className="h-px bg-white/10 my-1.5" />;
+                }
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      if (item.action) item.action();
+                      setVisible(false);
+                    }}
+                    className={`flex items-center justify-between px-3 py-1.5 hover:bg-white/10 !cursor-pointer transition-colors ${
+                      item.highlight ? "text-red-300 font-medium bg-red-500/10 hover:bg-red-500/20" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 overflow-hidden !cursor-pointer">
+                      {item.icon ? <span className="shrink-0">{item.icon}</span> : <div className="w-3.5 shrink-0" />}
+                      <span className="truncate !cursor-pointer">{item.label}</span>
+                    </div>
+                    {item.shortcut && <span className="text-neutral-500 text-[10px] ml-2 shrink-0 !cursor-pointer">{item.shortcut}</span>}
+                  </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 
