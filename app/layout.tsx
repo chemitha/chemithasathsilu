@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SpringGlobalCursor } from "@/components/v1/Skiper61";
 import { SeamlessVideoBackground } from "@/components/v1/SeamlessVideo";
+import { ContextMenu } from "@/components/ContextMenu";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,6 +48,7 @@ export default function RootLayout({
       <body className="relative min-h-full flex flex-col bg-black">
         <SeamlessVideoBackground />
         <SpringGlobalCursor />
+        <ContextMenu />
         {children}
       </body>
     </html>
