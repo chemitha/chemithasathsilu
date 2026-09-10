@@ -148,24 +148,49 @@ export default function ShowcasePage({
     initShowcase();
   }, [resolvedParams?.uid, slug, companyName, recordActivity]);
 
-  // Real-Time Mid-Session Expiration Monitor
+// Live Access Status Polling & Expiration Sync
   useEffect(() => {
-    if (!telemetry?.expiresAt || accessDenied) return;
+    if (!slug) return;
 
-    const checkExpiration = () => {
-      const expiryTime = new Date(telemetry.expiresAt!).getTime();
-      const nowTime = Date.now();
+    const syncAccessStatus = async () => {
+      try {
+        const res = await fetch(
+          `https://b2b-micro-saas-engine.onrender.com/api/access-status`,
+          {
+            method: 'GET',
+            headers: { 'x-lead-slug': slug },
+            cache: 'no-store',
+          }
+        );
 
-      if (expiryTime <= nowTime) {
-        setAccessDenied(true);
+        if (res.ok) {
+          const data = await res.json();
+          const newExpiry = data?.lead?.expiresAt;
+
+          if (newExpiry) {
+            const isExpired = new Date(newExpiry).getTime() <= Date.now();
+            
+            // Re-lock or Unlock live
+            setAccessDenied(isExpired);
+            setTelemetry((prev) => ({
+              ...(prev || { state: 'ACTIVE', locked: false }),
+              expiresAt: newExpiry,
+              locked: isExpired,
+              state: isExpired ? 'EXPIRED' : 'ACTIVE',
+            }));
+          }
+        } else if (res.status === 402 || res.status === 403) {
+          setAccessDenied(true);
+        }
+      } catch (err) {
+        console.error('Failed to sync live access status:', err);
       }
     };
 
-    checkExpiration();
-    const interval = setInterval(checkExpiration, 5000);
-
+    // Poll every 5 seconds to instantly pick up Telegram "Grant +24h" approvals
+    const interval = setInterval(syncAccessStatus, 5000);
     return () => clearInterval(interval);
-  }, [telemetry?.expiresAt, accessDenied]);
+  }, [slug]);
 
   // Timeout logic for iframe loading
   useEffect(() => {
@@ -244,7 +269,7 @@ export default function ShowcasePage({
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
       {telemetry && (
-        <div className="fixed top-0 left-0 right-0 z-40">
+        <div className="fixed top-0 left-0 right-0 z-40 !cursor-auto pointer-events-auto">
           <TrialUrgencyBanner
             createdAt={telemetry.firstVisitedAt || telemetry.createdAt || prospectData?.createdAt}
             expiresAt={telemetry.expiresAt}
@@ -299,8 +324,8 @@ export default function ShowcasePage({
 
       {/* Locked Paywall Overlay */}
       {isLocked && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg px-4">
-          <div className="max-w-md w-full bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 text-center shadow-2xl">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg px-4 !cursor-auto pointer-events-auto">
+          <div className="max-w-md w-full bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 text-center shadow-2xl !cursor-auto pointer-events-auto">
             <div className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-red-400 text-xl font-bold">!</span>
             </div>
@@ -312,23 +337,32 @@ export default function ShowcasePage({
             </p>
 
             {extensionRequested ? (
-              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono">
-                Extension request submitted! Our team has been notified via Telegram.
+              <div className="space-y-3">
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono text-center">
+                  Extension request submitted! Our team has been notified via Telegram.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="w-full py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium rounded-xl transition-colors !cursor-pointer pointer-events-auto"
+                >
+                  Check Status / Refresh
+                </button>
               </div>
             ) : (
-              <form onSubmit={handleRequestExtension} className="space-y-3">
+              <form onSubmit={handleRequestExtension} className="space-y-3 !cursor-auto pointer-events-auto">
                 <input
                   type="text"
                   placeholder="Reason for extension (e.g. Need 24h to test API integration)"
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors !cursor-text pointer-events-auto"
                   required
                 />
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 bg-white text-black text-xs font-medium rounded-xl hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50"
+                  className="w-full py-2.5 bg-white text-black text-xs font-medium rounded-xl hover:bg-neutral-200 active:scale-[0.98] transition-all disabled:opacity-50 !cursor-pointer pointer-events-auto"
                 >
                   {isSubmitting ? 'Submitting...' : 'Request +24h Extension'}
                 </button>
