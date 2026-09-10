@@ -337,16 +337,21 @@ export default function ShowcasePage({
             </p>
 
             {extensionRequested ? (
-              <div className="space-y-3">
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono text-center">
-                  Extension request submitted! Our team has been notified via Telegram.
+              <div className="space-y-3 !cursor-auto pointer-events-auto">
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono text-center leading-relaxed">
+                  Request submitted! Our team has been notified via Telegram. Once approved, this preview will automatically restore.
                 </div>
+                
                 <button
                   type="button"
-                  onClick={() => window.location.reload()}
-                  className="w-full py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium rounded-xl transition-colors !cursor-pointer pointer-events-auto"
+                  disabled={isSubmitting}
+                  onClick={(e) => {
+                    setExtensionRequested(false);
+                    handleRequestExtension(e);
+                  }}
+                  className="w-full py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-medium rounded-xl transition-colors !cursor-pointer pointer-events-auto disabled:opacity-50"
                 >
-                  Check Status / Refresh
+                  {isSubmitting ? 'Resending...' : 'Resend Request'}
                 </button>
               </div>
             ) : (
