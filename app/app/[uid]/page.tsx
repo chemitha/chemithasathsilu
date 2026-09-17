@@ -89,10 +89,16 @@ export default function ShowcasePage({
           setAccessDenied(true);
         } else if (accessRes.ok) {
           const accessData = await accessRes.json();
-          if (accessData?.lead?.expiresAt) {
+          const effectiveExpiry = accessData?.lead?.extendedUntil || accessData?.lead?.expiresAt || accessData?.expiresAt;
+          if (effectiveExpiry) {
+            const isExp = new Date(effectiveExpiry).getTime() <= Date.now();
+            const isLockedState = isExp || accessData?.lead?.lifecycleState === 'EXPIRED';
+            setAccessDenied(isLockedState);
             setTelemetry((prev) => ({
               ...(prev || { state: 'ACTIVE', locked: false }),
-              expiresAt: accessData.lead.expiresAt,
+              expiresAt: effectiveExpiry,
+              locked: isLockedState,
+              state: isLockedState ? 'EXPIRED' : (accessData?.lead?.lifecycleState || 'ACTIVE'),
             }));
           }
         }
@@ -158,7 +164,7 @@ export default function ShowcasePage({
     initShowcase();
   }, [resolvedParams?.uid, slug]);
 
-  // Live Access Status Polling & Expiration Sync
+  // Live Access Status Polling & Expiration Sync (Detects Telegram Grant +24h / Decline)
   useEffect(() => {
     if (!slug) return;
 
@@ -175,18 +181,27 @@ export default function ShowcasePage({
 
         if (res.ok) {
           const data = await res.json();
-          const newExpiry = data?.lead?.expiresAt;
+          const effectiveExpiry = data?.lead?.extendedUntil || data?.lead?.expiresAt || data?.expiresAt;
+          const lifecycleState = data?.lead?.lifecycleState || data?.state;
 
-          if (newExpiry) {
-            const isExpired = new Date(newExpiry).getTime() <= Date.now();
-            
-            // Re-lock or Unlock live
-            setAccessDenied(isExpired);
+          if (effectiveExpiry || lifecycleState) {
+            const isExpired = effectiveExpiry ? new Date(effectiveExpiry).getTime() <= Date.now() : false;
+            const isLockedState = isExpired || lifecycleState === 'EXPIRED';
+
+            // Auto-reload and unblock if Telegram admin granted extension while user was locked
+            if (!isLockedState && (accessDenied || extensionRequested)) {
+              setAccessDenied(false);
+              setExtensionRequested(false);
+              window.location.reload();
+              return;
+            }
+
+            setAccessDenied(isLockedState);
             setTelemetry((prev) => ({
               ...(prev || { state: 'ACTIVE', locked: false }),
-              expiresAt: newExpiry,
-              locked: isExpired,
-              state: isExpired ? 'EXPIRED' : 'ACTIVE',
+              expiresAt: effectiveExpiry || prev?.expiresAt,
+              locked: isLockedState,
+              state: isLockedState ? 'EXPIRED' : (lifecycleState || 'ACTIVE'),
             }));
           }
         } else if (res.status === 402 || res.status === 403) {
@@ -197,10 +212,10 @@ export default function ShowcasePage({
       }
     };
 
-    // Poll every 5 seconds to instantly pick up Telegram "Grant +24h" approvals
-    const interval = setInterval(syncAccessStatus, 5000);
+    // Poll every 3 seconds to instantly reflect Telegram "Grant +24h" or "Decline" decisions
+    const interval = setInterval(syncAccessStatus, 3000);
     return () => clearInterval(interval);
-  }, [slug, ENGINE_URL]);
+  }, [slug, ENGINE_URL, accessDenied, extensionRequested]);
 
   // Timeout logic for iframe loading
   useEffect(() => {
