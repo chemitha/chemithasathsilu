@@ -217,14 +217,15 @@ export default function ShowcasePage({
     return () => clearInterval(interval);
   }, [slug, ENGINE_URL, accessDenied, extensionRequested]);
 
-  // Timeout logic for iframe loading
+  // Timeout logic for iframe loading — auto-dismiss black overlay so screen never freezes
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isLoading) {
       setShowReload(false);
       timer = setTimeout(() => {
         setShowReload(true);
-      }, 10000);
+        setIsLoading(false); // Hide black blocker so iframe content/error page is visible
+      }, 8000);
     }
     return () => clearTimeout(timer);
   }, [isLoading, reloadKey]);
@@ -344,6 +345,7 @@ export default function ShowcasePage({
           allow="geolocation; microphone; camera; clipboard-write; clipboard-read; autoplay"
           title={`Showcase - ${slug}`}
           onLoad={handleIframeLoad}
+          onError={() => setIsLoading(false)}
         />
       )}
 

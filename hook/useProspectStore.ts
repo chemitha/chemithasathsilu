@@ -54,16 +54,25 @@ export function useProspectStore(clientSlug: string, companyName: string) {
   const recordActivity = (actionText: string) => {
     if (typeof window === "undefined" || !clientSlug) return;
 
-    const existingStr = localStorage.getItem(STORAGE_KEY);
-    const currentData: ProspectData = existingStr
-      ? JSON.parse(existingStr)
-      : data || {
-          clientSlug,
-          companyName,
-          createdAt: new Date().toISOString(),
-          dealSigned: false,
-          activities: [],
-        };
+    let currentData: ProspectData;
+    try {
+      const existingStr = localStorage.getItem(STORAGE_KEY);
+      currentData = existingStr ? JSON.parse(existingStr) : data || {
+        clientSlug,
+        companyName,
+        createdAt: new Date().toISOString(),
+        dealSigned: false,
+        activities: [],
+      };
+    } catch {
+      currentData = data || {
+        clientSlug,
+        companyName,
+        createdAt: new Date().toISOString(),
+        dealSigned: false,
+        activities: [],
+      };
+    }
 
     const newEntry: ProspectActivity = {
       id: Date.now(),
@@ -76,22 +85,34 @@ export function useProspectStore(clientSlug: string, companyName: string) {
       activities: [newEntry, ...(currentData.activities || [])],
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Failed to update prospect localStorage activity", e);
+    }
     setData(updated);
   };
 
   const signDeal = () => {
     if (typeof window === "undefined" || !clientSlug) return;
 
-    const existingStr = localStorage.getItem(STORAGE_KEY);
-    const currentData: ProspectData = existingStr
-      ? JSON.parse(existingStr)
-      : data || {
-          clientSlug,
-          companyName,
-          createdAt: new Date().toISOString(),
-          activities: [],
-        };
+    let currentData: ProspectData;
+    try {
+      const existingStr = localStorage.getItem(STORAGE_KEY);
+      currentData = existingStr ? JSON.parse(existingStr) : data || {
+        clientSlug,
+        companyName,
+        createdAt: new Date().toISOString(),
+        activities: [],
+      };
+    } catch {
+      currentData = data || {
+        clientSlug,
+        companyName,
+        createdAt: new Date().toISOString(),
+        activities: [],
+      };
+    }
 
     const updated: ProspectData = {
       ...currentData,
@@ -99,14 +120,22 @@ export function useProspectStore(clientSlug: string, companyName: string) {
       handshakeAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Failed to set signDeal in localStorage", e);
+    }
     setData(updated);
   };
 
   const getDumpForMigration = (): ProspectData | null => {
     if (typeof window === "undefined" || !clientSlug) return null;
-    const existing = localStorage.getItem(STORAGE_KEY);
-    return existing ? JSON.parse(existing) : data;
+    try {
+      const existing = localStorage.getItem(STORAGE_KEY);
+      return existing ? JSON.parse(existing) : data;
+    } catch {
+      return data;
+    }
   };
 
   const migrateToProduction = async (): Promise<{
