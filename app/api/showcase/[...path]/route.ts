@@ -21,7 +21,7 @@ export async function GET(
   let deployedUrl: string | null = null;
 
   // 1. Primary Lookup: Try fetching actual target URL from your Express backend / DB
-  const trackerUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "http://localhost:3001";
+  const trackerUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "https://b2b-micro-saas-engine.onrender.com";
   
   try {
     const leadRes = await fetch(`${trackerUrl}/api/leads/${slug}`, {
@@ -72,33 +72,10 @@ export async function GET(
     }
   }
 
-  // 3. Absolute Fallback: Append slug as query parameter to primary app to preserve context
+  // 3. Fallback: Canonical demo subdomain or main app
   if (!deployedUrl) {
-    deployedUrl = `${baseAppUrl}?showcase=${slug}`;
+    deployedUrl = `https://demo-${slug}.vercel.app`;
   }
 
-  // 4. Bot Detection Guard
-  const userAgent = req.headers.get("user-agent") || "";
-  if (BOT_REGEX.test(userAgent)) {
-    console.log(`[Showcase API] Ignored bot request for "${slug}" (${userAgent})`);
-    return NextResponse.json({ deployedUrl, tracked: false });
-  }
-
-  // 5. Dispatch Telemetry
-  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-
-  try {
-    await fetch(`${trackerUrl}/api/track-view`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "bypass-tunnel-reminder": "true",
-      },
-      body: JSON.stringify({ slug, deployedUrl, clientIp }),
-    });
-  } catch (err) {
-    console.error("[Showcase API] Telemetry dispatch error:", err);
-  }
-
-  return NextResponse.json({ deployedUrl, tracked: true });
+  return NextResponse.json({ deployedUrl });
 }

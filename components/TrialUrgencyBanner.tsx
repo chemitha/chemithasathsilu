@@ -159,7 +159,8 @@ export function TrialUrgencyBanner({
 
     // Call server endpoint to persist extension in PostgreSQL
     try {
-      const res = await fetch("https://b2b-micro-saas-engine.onrender.com/api/request-24h-extension", {
+      const engineUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "https://b2b-micro-saas-engine.onrender.com";
+      const res = await fetch(`${engineUrl}/api/request-24h-extension`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug: workspaceId }),

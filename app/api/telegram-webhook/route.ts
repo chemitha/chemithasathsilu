@@ -19,7 +19,8 @@ export async function POST(req: Request) {
     if (action === "grant_24h") {
       // 1. Extend lead access via Engine API
       try {
-        await fetch(`https://b2b-micro-saas-engine.onrender.com/api/convert-lead`, {
+        const engineUrl = process.env.NEXT_PUBLIC_ENGINE_URL || "https://b2b-micro-saas-engine.onrender.com";
+        await fetch(`${engineUrl}/api/convert-lead`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ slug: workspaceId, state: 'IN_EVALUATION' }),

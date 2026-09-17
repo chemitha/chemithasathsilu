@@ -40,6 +40,8 @@ export default function ShowcasePage({
   // Local Data Trap Initialization (Zero DB overhead)
   const { data: prospectData, recordActivity, migrateToProduction } = useProspectStore(slug, companyName);
 
+  const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL || 'https://b2b-micro-saas-engine.onrender.com';
+
   // 1. Force dynamic document title update
   useEffect(() => {
     if (!resolvedParams?.uid) return;
@@ -66,15 +68,15 @@ export default function ShowcasePage({
     }
   };
 
-  // 2. Fetch live deployment, access gatekeeping status, & ping telemetry tracking
+  // 2. Fetch live deployment, access gatekeeping status, & ping telemetry tracking (once per session)
   useEffect(() => {
-    if (!resolvedParams?.uid) return;
+    if (!resolvedParams?.uid || !slug) return;
 
     async function initShowcase() {
       // 2A. Check Access Enforcer Status on Express Backend
       try {
         const accessRes = await fetch(
-          `https://b2b-micro-saas-engine.onrender.com/api/access-status`,
+          `${ENGINE_URL}/api/access-status`,
           {
             method: 'GET',
             headers: {
@@ -98,21 +100,29 @@ export default function ShowcasePage({
         console.error('Access status check failed:', err);
       }
 
-      // 2B. Ping telemetry endpoint on the engine backend
+      // 2B. Ping telemetry endpoint (Session-Guarded: runs strictly once per browser session)
+      const sessionKey = `tracked_session_${slug}`;
+      const isAlreadyTracked = typeof window !== 'undefined' && sessionStorage.getItem(sessionKey);
+
       try {
-        const trackRes = await fetch(
-          `https://b2b-micro-saas-engine.onrender.com/api/track-view`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug }),
-          }
-        );
-        if (trackRes.ok) {
-          const trackData = await trackRes.json();
-          setTelemetry(trackData);
-          if (trackData.locked || trackData.state === 'EXPIRED') {
-            setAccessDenied(true);
+        if (!isAlreadyTracked) {
+          const trackRes = await fetch(
+            `${ENGINE_URL}/api/track-view`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ slug }),
+            }
+          );
+          if (trackRes.ok) {
+            const trackData = await trackRes.json();
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem(sessionKey, 'true');
+            }
+            setTelemetry(trackData);
+            if (trackData.locked || trackData.state === 'EXPIRED') {
+              setAccessDenied(true);
+            }
           }
         }
       } catch (err) {
@@ -146,16 +156,16 @@ export default function ShowcasePage({
     }
 
     initShowcase();
-  }, [resolvedParams?.uid, slug, companyName, recordActivity]);
+  }, [resolvedParams?.uid, slug]);
 
-// Live Access Status Polling & Expiration Sync
+  // Live Access Status Polling & Expiration Sync
   useEffect(() => {
     if (!slug) return;
 
     const syncAccessStatus = async () => {
       try {
         const res = await fetch(
-          `https://b2b-micro-saas-engine.onrender.com/api/access-status`,
+          `${ENGINE_URL}/api/access-status`,
           {
             method: 'GET',
             headers: { 'x-lead-slug': slug },
@@ -190,7 +200,7 @@ export default function ShowcasePage({
     // Poll every 5 seconds to instantly pick up Telegram "Grant +24h" approvals
     const interval = setInterval(syncAccessStatus, 5000);
     return () => clearInterval(interval);
-  }, [slug]);
+  }, [slug, ENGINE_URL]);
 
   // Timeout logic for iframe loading
   useEffect(() => {
@@ -221,7 +231,7 @@ export default function ShowcasePage({
     setIsSubmitting(true);
     try {
       const res = await fetch(
-        `https://b2b-micro-saas-engine.onrender.com/api/request-extension`,
+        `${ENGINE_URL}/api/request-extension`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -246,7 +256,7 @@ export default function ShowcasePage({
   const handleProductionUpgrade = async () => {
     try {
       // 1. Mark lead as DEAL_CLOSED in the engine backend
-      await fetch(`https://b2b-micro-saas-engine.onrender.com/api/convert-lead`, {
+      await fetch(`${ENGINE_URL}/api/convert-lead`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
