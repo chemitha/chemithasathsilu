@@ -90,15 +90,17 @@ export default function ShowcasePage({
         } else if (accessRes.ok) {
           const accessData = await accessRes.json();
           const effectiveExpiry = accessData?.lead?.extendedUntil || accessData?.lead?.expiresAt || accessData?.expiresAt;
-          if (effectiveExpiry) {
-            const isExp = new Date(effectiveExpiry).getTime() <= Date.now();
-            const isLockedState = isExp || accessData?.lead?.lifecycleState === 'EXPIRED';
+          const isSigned = accessData?.lead?.lifecycleState === 'DEAL_CLOSED' || accessData?.lead?.lifecycleState === 'FULLY_ONBOARDED' || Boolean(accessData?.lead?.dealSigned || accessData?.dealSigned);
+          if (effectiveExpiry || isSigned) {
+            const isExp = effectiveExpiry ? new Date(effectiveExpiry).getTime() <= Date.now() : false;
+            const isLockedState = !isSigned && (isExp || accessData?.lead?.lifecycleState === 'EXPIRED');
             setAccessDenied(isLockedState);
             setTelemetry((prev) => ({
               ...(prev || { state: 'ACTIVE', locked: false }),
               expiresAt: effectiveExpiry,
               locked: isLockedState,
               state: isLockedState ? 'EXPIRED' : (accessData?.lead?.lifecycleState || 'ACTIVE'),
+              dealSigned: isSigned,
             }));
           }
         }
@@ -125,8 +127,9 @@ export default function ShowcasePage({
             if (typeof window !== 'undefined') {
               sessionStorage.setItem(sessionKey, 'true');
             }
-            setTelemetry(trackData);
-            if (trackData.locked || trackData.state === 'EXPIRED') {
+            const isSigned = trackData.dealSigned || trackData.state === 'DEAL_CLOSED' || trackData.state === 'FULLY_ONBOARDED';
+            setTelemetry({ ...trackData, dealSigned: isSigned });
+            if (!isSigned && (trackData.locked || trackData.state === 'EXPIRED')) {
               setAccessDenied(true);
             }
           }
@@ -183,10 +186,11 @@ export default function ShowcasePage({
           const data = await res.json();
           const effectiveExpiry = data?.lead?.extendedUntil || data?.lead?.expiresAt || data?.expiresAt;
           const lifecycleState = data?.lead?.lifecycleState || data?.state;
+          const isSigned = lifecycleState === 'DEAL_CLOSED' || lifecycleState === 'FULLY_ONBOARDED' || Boolean(data?.lead?.dealSigned || data?.dealSigned);
 
           if (effectiveExpiry || lifecycleState) {
             const isExpired = effectiveExpiry ? new Date(effectiveExpiry).getTime() <= Date.now() : false;
-            const isLockedState = isExpired || lifecycleState === 'EXPIRED';
+            const isLockedState = !isSigned && (isExpired || lifecycleState === 'EXPIRED');
 
             // Auto-reload and unblock if Telegram admin granted extension while user was locked
             if (!isLockedState && (accessDenied || extensionRequested)) {
@@ -202,6 +206,7 @@ export default function ShowcasePage({
               expiresAt: effectiveExpiry || prev?.expiresAt,
               locked: isLockedState,
               state: isLockedState ? 'EXPIRED' : (lifecycleState || 'ACTIVE'),
+              dealSigned: isSigned,
             }));
           }
         } else if (res.status === 402 || res.status === 403) {
@@ -294,17 +299,17 @@ export default function ShowcasePage({
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
-      {telemetry && (
-        <div className="fixed top-0 left-0 right-0 z-40 !cursor-auto pointer-events-auto">
-          <TrialUrgencyBanner
-            createdAt={telemetry.firstVisitedAt || telemetry.createdAt || prospectData?.createdAt}
-            expiresAt={telemetry.expiresAt}
-            dealSigned={telemetry.dealSigned ?? prospectData?.dealSigned}
-            activityCount={prospectData?.activities?.length || 0}
-            workspaceId={slug}
-            onUpgradeClick={handleProductionUpgrade}
-          />
-        </div>
+      {/* Only show the pill countdown AFTER they pay the advance payment (DEAL_CLOSED / EXTENDED) */}
+      {telemetry && (telemetry.state === 'DEAL_CLOSED' || telemetry.state === 'EXTENDED') && (
+        <TrialUrgencyBanner
+          expiresAt={telemetry.expiresAt}
+          isExtended={telemetry.state === "EXTENDED"}
+          isLocked={isLocked}
+          onResolveClick={() => {
+            const inputEl = document.querySelector('input[name="reason"]') as HTMLInputElement;
+            if (inputEl) inputEl.focus();
+          }}
+        />
       )}
 
       {/* Loading Overlay */}
@@ -385,6 +390,7 @@ export default function ShowcasePage({
               <form onSubmit={handleRequestExtension} className="space-y-3 !cursor-auto pointer-events-auto">
                 <input
                   type="text"
+                  name="reason"
                   placeholder="Reason for extension (e.g. Need 24h to test API integration)"
                   value={requestReason}
                   onChange={(e) => setRequestReason(e.target.value)}
