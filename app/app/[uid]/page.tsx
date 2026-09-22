@@ -298,7 +298,7 @@ export default function ShowcasePage({
   const isLocked = accessDenied || telemetry?.locked || telemetry?.state === 'EXPIRED';
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black select-none">
+    <div className="relative w-screen h-screen overflow-hidden bg-black select-none !cursor-default">
       {/* Only show the pill countdown AFTER they pay the advance payment (DEAL_CLOSED / EXTENDED) */}
       {telemetry && (telemetry.state === 'DEAL_CLOSED' || telemetry.state === 'EXTENDED') && (
         <TrialUrgencyBanner
@@ -314,22 +314,22 @@ export default function ShowcasePage({
 
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black transition-opacity duration-300 !cursor-default">
-          <div className="flex flex-col items-center">
-            <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mb-3 pointer-events-none" />
-            <span className="text-xs text-neutral-400 font-mono tracking-wider pointer-events-none">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black transition-opacity duration-300 !cursor-default pointer-events-auto">
+          <div className="flex flex-col items-center !cursor-default pointer-events-none">
+            <div className="w-[30px] h-[30px] border-2 border-white/20 border-t-white rounded-full animate-spin mb-3 pointer-events-none !cursor-default" />
+            <span className="text-sm text-neutral-400 font-sans tracking-wider pointer-events-none !cursor-default">
               LOADING {companyName}...
             </span>
           </div>
 
           {showReload && (
-            <div className="absolute bottom-12 flex flex-col items-center animate-fade-in !cursor-auto">
-              <p className="text-xs text-neutral-400 font-mono tracking-wider !cursor-auto pointer-events-auto">
+            <div className="absolute bottom-12 flex flex-col items-center animate-fade-in !cursor-default pointer-events-auto">
+              <p className="text-xs text-neutral-400 font-mono tracking-wider !cursor-default pointer-events-none">
                 Taking long?
               </p>
               <button
                 onClick={handleReload}
-                className="mt-2 text-white border-none text-sm font-medium underline !cursor-pointer transition-all duration-150 ease-in-out hover:decoration-dotted active:scale-95"
+                className="mt-2 text-white border-none text-sm font-medium underline !cursor-pointer pointer-events-auto transition-all duration-150 ease-in-out hover:decoration-dotted active:scale-95"
               >
                 Click to Reload
               </button>
@@ -343,8 +343,8 @@ export default function ShowcasePage({
         <iframe
           key={reloadKey}
           src={targetUrl}
-          className={`w-full h-full border-0 relative z-10 ${
-            isLocked ? 'blur-md pointer-events-none' : ''
+          className={`w-full h-full border-0 relative z-10 !cursor-default ${
+            isLocked ? 'blur-md pointer-events-none' : 'pointer-events-auto'
           }`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"
           allow="geolocation; microphone; camera; clipboard-write; clipboard-read; autoplay"
@@ -356,21 +356,21 @@ export default function ShowcasePage({
 
       {/* Locked Paywall Overlay */}
       {isLocked && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg px-4 !cursor-auto pointer-events-auto">
-          <div className="max-w-md w-full bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 text-center shadow-2xl !cursor-auto pointer-events-auto">
-            <div className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-red-400 text-xl font-bold">!</span>
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-lg px-4 !cursor-default pointer-events-auto">
+          <div className="max-w-md w-full bg-neutral-900/90 border border-neutral-800 rounded-2xl p-6 text-center shadow-2xl !cursor-default pointer-events-auto">
+            <div className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 !cursor-default pointer-events-none">
+              <span className="text-red-400 text-xl font-bold !cursor-default pointer-events-none">!</span>
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <h2 className="text-xl font-semibold text-white mb-2 !cursor-default pointer-events-none">
               Trial Period Expired
             </h2>
-            <p className="text-sm text-neutral-400 mb-6">
+            <p className="text-sm text-neutral-400 mb-6 !cursor-default pointer-events-none">
               The preview window for {companyName} has ended. Request an extension or unlock permanent access.
             </p>
 
             {extensionRequested ? (
-              <div className="space-y-3 !cursor-auto pointer-events-auto">
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono text-center leading-relaxed">
+              <div className="space-y-3 !cursor-default pointer-events-auto">
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono text-center leading-relaxed !cursor-default pointer-events-none">
                   Request submitted! Our team has been notified via Telegram. Once approved, this preview will automatically restore.
                 </div>
                 
@@ -387,7 +387,7 @@ export default function ShowcasePage({
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleRequestExtension} className="space-y-3 !cursor-auto pointer-events-auto">
+              <form onSubmit={handleRequestExtension} className="space-y-3 !cursor-default pointer-events-auto">
                 <input
                   type="text"
                   name="reason"
@@ -411,21 +411,21 @@ export default function ShowcasePage({
       )}
 
       {/* Glassmorphic Bottom-Right Pill */}
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-200/50 backdrop-blur-md border border-white/10 text-xs text-white/80 shadow-md opacity-100 hover:opacity-30 transition-opacity duration-200 !cursor-auto pointer-events-auto">
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-200/50 backdrop-blur-md border border-white/10 text-xs text-white/80 shadow-md opacity-100 hover:opacity-30 transition-opacity duration-200 !cursor-default pointer-events-auto">
         <Image
           src="/favicon.ico"
           alt="Logo"
           width={18}
           height={18}
-          className="brightness-200 opacity-90 object-contain pointer-events-none"
+          className="brightness-200 opacity-90 object-contain pointer-events-none !cursor-default"
         />
-        <span className="text-black font-light pointer-events-none">App by</span>
+        <span className="text-black font-light pointer-events-none !cursor-default">App by</span>
         <Image
           src="/signature-cropped.svg"
           alt="Logo"
           width={40}
           height={14}
-          className="brightness-200 opacity-90 object-contain pointer-events-none"
+          className="brightness-200 opacity-90 object-contain pointer-events-none !cursor-default"
         />
       </div>
 
