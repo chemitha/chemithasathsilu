@@ -344,23 +344,23 @@ export default function ShowcasePage({
 
       {/* Undeployed Provisioning Screen */}
       {isProvisioning && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black px-6 text-center select-none">
-          <div className="w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mb-5 shadow-2xl">
-            <span className="text-amber-400 text-xl animate-pulse">⚡</span>
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black px-6 text-center select-none pointer-events-none !cursor-default">
+          <div className="w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mb-5 shadow-2xl pointer-events-none">
+            <span className="text-amber-400 text-xl animate-pulse pointer-events-none">⚡</span>
           </div>
-          <h2 className="text-xl font-medium text-white mb-2 tracking-tight">
+          <h2 className="text-xl font-medium text-white mb-2 tracking-tight pointer-events-none">
             Environment Provisioning
           </h2>
-          <p className="text-xs text-neutral-400 max-w-sm leading-relaxed mb-6 font-mono">
-            The personalized interactive showcase for <span className="text-neutral-200 font-semibold">{companyName}</span> is queued for deployment. Run <code className="text-neutral-300 font-semibold px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700">/deploy</code> in the bot to build this preview.
+          <p className="text-xs text-neutral-400 max-w-sm leading-relaxed mb-6 font-mono pointer-events-none">
+            The personalized interactive showcase for <span className="text-neutral-200 font-semibold pointer-events-none">{companyName}</span> is queued for deployment. Run <code className="text-neutral-300 font-semibold px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 pointer-events-none">/deploy</code> in the bot to build this preview.
           </p>
-          <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 text-[11px] text-neutral-400 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+          <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 text-[11px] text-neutral-400 backdrop-blur-md pointer-events-none">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.6)] pointer-events-none" />
             Awaiting Vercel build
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="mt-6 text-xs text-neutral-500 hover:text-white transition-colors underline underline-offset-4 decoration-neutral-700 hover:decoration-white !cursor-pointer pointer-events-auto"
+            className="mt-6 text-xs text-neutral-500 hover:text-white transition-colors underline underline-offset-4 decoration-neutral-700 hover:decoration-white pointer-events-auto !cursor-pointer"
           >
             Refresh status
           </button>
