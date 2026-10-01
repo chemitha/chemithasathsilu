@@ -25,6 +25,7 @@ export default function ShowcasePage({
   const [showReload, setShowReload] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [targetUrl, setTargetUrl] = useState<string | null>(null);
+  const [isProvisioning, setIsProvisioning] = useState(false);
 
   // Telemetry & Paywall States
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
@@ -154,14 +155,17 @@ export default function ShowcasePage({
           }
         }
       } catch (err) {
-        console.warn('Failed to fetch deployed URL from showcase API, using fallback', err);
+        console.warn('Failed to fetch deployed URL from showcase API', err);
       }
 
-      // Use target URL or construct primary fallback domain
-      const baseUrl = rawTargetUrl || `https://demo-${slug}.vercel.app`;
-
-      // Ensure ?slug= query parameter is passed into the iframe
-      setTargetUrl(buildUrlWithSlug(baseUrl, slug));
+      // If no deployment URL exists, mark as provisioning instead of loading a nonexistent Vercel app
+      if (!rawTargetUrl) {
+        setIsProvisioning(true);
+        setIsLoading(false);
+      } else {
+        setIsProvisioning(false);
+        setTargetUrl(buildUrlWithSlug(rawTargetUrl, slug));
+      }
     }
 
     initShowcase();
@@ -313,7 +317,7 @@ export default function ShowcasePage({
       )}
 
       {/* Loading Overlay */}
-      {isLoading && (
+      {isLoading && !isProvisioning && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black transition-opacity duration-300 !cursor-default pointer-events-auto">
           <div className="flex flex-col items-center !cursor-default pointer-events-none">
             <div className="w-[30px] h-[30px] border-2 border-white/20 border-t-white rounded-full animate-spin mb-3 pointer-events-none !cursor-default" />
@@ -338,8 +342,33 @@ export default function ShowcasePage({
         </div>
       )}
 
+      {/* Undeployed Provisioning Screen */}
+      {isProvisioning && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black px-6 text-center select-none">
+          <div className="w-14 h-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mb-5 shadow-2xl">
+            <span className="text-amber-400 text-xl animate-pulse">⚡</span>
+          </div>
+          <h2 className="text-xl font-medium text-white mb-2 tracking-tight">
+            Environment Provisioning
+          </h2>
+          <p className="text-xs text-neutral-400 max-w-sm leading-relaxed mb-6 font-mono">
+            The personalized interactive showcase for <span className="text-neutral-200 font-semibold">{companyName}</span> is queued for deployment. Run <code className="text-neutral-300 font-semibold px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700">/deploy</code> in the bot to build this preview.
+          </p>
+          <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 text-[11px] text-neutral-400 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+            Awaiting Vercel build
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 text-xs text-neutral-500 hover:text-white transition-colors underline underline-offset-4 decoration-neutral-700 hover:decoration-white !cursor-pointer pointer-events-auto"
+          >
+            Refresh status
+          </button>
+        </div>
+      )}
+
       {/* Embedded App Frame */}
-      {targetUrl && (
+      {targetUrl && !isProvisioning && (
         <iframe
           key={reloadKey}
           src={targetUrl}

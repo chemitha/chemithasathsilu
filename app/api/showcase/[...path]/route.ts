@@ -31,7 +31,7 @@ export async function GET(
     
     if (leadRes.ok) {
       const leadData = await leadRes.json();
-      if (leadData?.deployedUrl) {
+      if (leadData?.deployedUrl && leadData?.status !== "PENDING") {
         deployedUrl = leadData.deployedUrl;
       }
     }
@@ -72,10 +72,9 @@ export async function GET(
     }
   }
 
-  // 3. Fallback: Canonical demo subdomain or main app
-  if (!deployedUrl) {
-    deployedUrl = `https://demo-${slug}.vercel.app`;
-  }
-
-  return NextResponse.json({ deployedUrl });
+  // 3. Do not synthesize a non-existent demo subdomain; return null if not yet provisioned
+  return NextResponse.json({
+    deployedUrl: deployedUrl || null,
+    isDeployed: Boolean(deployedUrl),
+  });
 }
