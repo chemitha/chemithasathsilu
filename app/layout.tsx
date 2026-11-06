@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { SpringGlobalCursor } from "@/components/v1/Skiper61";
 import { SeamlessVideoBackground } from "@/components/v1/SeamlessVideo";
 import { ContextMenu } from "@/components/ContextMenu";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,6 +51,7 @@ export default function RootLayout({
         <SpringGlobalCursor />
         <ContextMenu />
         {children}
+        <Analytics />
       </body>
     </html>
   );
