@@ -43,6 +43,63 @@ export default function ShowcasePage({
 
   const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL || 'https://b2b-micro-saas-engine.onrender.com';
 
+  // Immediate early anti-devtools & source-code protection before any visuals/functions run
+  useEffect(() => {
+    // 1. Comprehensive keyboard shortcut blocker
+    const preventInspectKeys = (e: KeyboardEvent) => {
+      const key = e.key ? e.key.toUpperCase() : '';
+      const code = e.code ? e.code.toUpperCase() : '';
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+
+      const isF12 = key === 'F12' || code === 'F12';
+      const isDevToolsCombo =
+        isCmdOrCtrl && e.shiftKey && ['I', 'J', 'C', 'K', 'E', 'S', 'M'].includes(key);
+      const isSourceOrSave = isCmdOrCtrl && ['U', 'S', 'P'].includes(key);
+
+      if (isF12 || isDevToolsCombo || isSourceOrSave) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') {
+          e.stopImmediatePropagation();
+        }
+        return false;
+      }
+    };
+
+    // 2. Total context menu suppression
+    const blockContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') {
+        e.stopImmediatePropagation();
+      }
+      return false;
+    };
+
+    const blockDrag = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    ['keydown', 'keyup', 'keypress'].forEach((evt) => {
+      window.addEventListener(evt, preventInspectKeys as EventListener, true);
+      document.addEventListener(evt, preventInspectKeys as EventListener, true);
+    });
+
+    window.addEventListener('contextmenu', blockContextMenu, true);
+    document.addEventListener('contextmenu', blockContextMenu, true);
+    window.addEventListener('dragstart', blockDrag, true);
+
+    return () => {
+      ['keydown', 'keyup', 'keypress'].forEach((evt) => {
+        window.removeEventListener(evt, preventInspectKeys as EventListener, true);
+        document.removeEventListener(evt, preventInspectKeys as EventListener, true);
+      });
+      window.removeEventListener('contextmenu', blockContextMenu, true);
+      document.removeEventListener('contextmenu', blockContextMenu, true);
+      window.removeEventListener('dragstart', blockDrag, true);
+    };
+  }, []);
+
   // 1. Force dynamic document title update
   useEffect(() => {
     if (!resolvedParams?.uid) return;
@@ -439,27 +496,34 @@ export default function ShowcasePage({
         </div>
       )}
 
-      {/* Glassmorphic Bottom-Right Pill */}
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-200/50 backdrop-blur-md border border-white/10 text-xs text-white/80 shadow-md opacity-100 hover:opacity-30 transition-opacity duration-200 !cursor-default pointer-events-auto">
+      {/* Glassmorphic Bottom-Right Pill (Watermark) */}
+      <div
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }}
+        className="fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-neutral-200/50 backdrop-blur-md border border-white/10 text-xs text-white/80 shadow-md opacity-100 hover:opacity-30 transition-opacity duration-200 !cursor-default pointer-events-auto select-none"
+      >
         <Image
           src="/favicon.ico"
           alt="Logo"
           width={18}
           height={18}
-          className="brightness-200 opacity-90 object-contain pointer-events-none !cursor-default"
+          className="brightness-200 opacity-90 object-contain pointer-events-none !cursor-default select-none"
         />
-        <span className="text-black font-light pointer-events-none !cursor-default">App by</span>
+        <span className="text-black font-light pointer-events-none !cursor-default select-none">App by</span>
         <Image
           src="/signature-cropped.svg"
           alt="Logo"
           width={40}
           height={14}
-          className="brightness-200 opacity-90 object-contain pointer-events-none !cursor-default"
+          className="brightness-200 opacity-90 object-contain pointer-events-none !cursor-default select-none"
         />
       </div>
 
-      {/* Anti-DevTools Protection */}
-      {/* <Script src="/anti-devtools.js" strategy="afterInteractive" /> */}
+      {/* Anti-DevTools Protection - runs immediately before interactive visuals */}
+      <Script src="/anti-devtools.js" strategy="beforeInteractive" />
     </div>
   );
 }
