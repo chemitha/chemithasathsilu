@@ -6,7 +6,11 @@ import Image from "next/image";
 
 const SPINNER_FRAMES = ["⠏", "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇"];
 
-export const Preloader: React.FC = () => {
+interface PreloaderProps {
+  onComplete?: () => void;
+}
+
+export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [spinnerIndex, setSpinnerIndex] = useState(0);
   const [statusText, setStatusText] = useState("INITIALIZING SYSTEM...");
@@ -73,7 +77,7 @@ export const Preloader: React.FC = () => {
   }, []);
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" onExitComplete={onComplete}>
       {isLoading && (
         <motion.div
           key="preloader"

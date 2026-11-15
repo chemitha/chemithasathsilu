@@ -21,6 +21,7 @@ export interface SplitTextProps {
   rootMargin?: string;
   tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
   textAlign?: 'left' | 'right' | 'center' | 'justify' | 'initial' | 'inherit';
+  ready?: boolean;
   onLetterAnimationComplete?: () => void;
 }
 
@@ -37,6 +38,7 @@ const SplitText: React.FC<SplitTextProps> = ({
   rootMargin = '-100px',
   tag = 'p',
   textAlign = 'center',
+  ready = true,
   onLetterAnimationComplete
 }) => {
   const ref = useRef<HTMLParagraphElement>(null);
@@ -59,7 +61,7 @@ const SplitText: React.FC<SplitTextProps> = ({
 
   useGSAP(
     () => {
-      if (!ref.current || !fontsLoaded) return;
+      if (!ref.current || !fontsLoaded || !ready) return;
 
       const el = ref.current as HTMLElement & {
         _rbsplitInstance?: GSAPSplitText;
@@ -159,7 +161,8 @@ const SplitText: React.FC<SplitTextProps> = ({
         JSON.stringify(to),
         threshold,
         rootMargin,
-        fontsLoaded
+        fontsLoaded,
+        ready
       ],
       scope: ref
     }

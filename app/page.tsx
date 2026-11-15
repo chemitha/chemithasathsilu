@@ -47,9 +47,11 @@ const techLogos = [
 ];
 
 export default function Home() {
+  const [preloaderDone, setPreloaderDone] = React.useState(false);
+
   return (
     <div className="h-[100dvh] w-full overflow-y-scroll md:snap-y md:snap-mandatory scroll-smooth font-sans overflow-x-hidden">
-      <Preloader />
+      <Preloader onComplete={() => setPreloaderDone(true)} />
       <SeamlessVideoWithHalftone />
 
       <DynamicNavbar triggerId="navbar-trigger" />
@@ -78,6 +80,7 @@ export default function Home() {
             threshold={0}
             rootMargin="0px"
             textAlign="center"
+            ready={preloaderDone}
           />
         </div>
 
