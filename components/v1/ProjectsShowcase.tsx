@@ -1,5 +1,6 @@
 "use client";
 
+// Previously called Skiper80.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
 import { ExternalLink, BookOpen } from "lucide-react";
@@ -89,7 +90,7 @@ const MORPH: Transition = {
   mass: 0.8,
 };
 
-export const Skiper80: React.FC = () => {
+export const ProjectsShowcase: React.FC = () => {
   const [hoveredProject, setHoveredProject] = useState<Project>(PROJECTS[0]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
@@ -453,4 +454,4 @@ export const Skiper80: React.FC = () => {
   );
 };
 
-export default Skiper80;
+export default ProjectsShowcase;

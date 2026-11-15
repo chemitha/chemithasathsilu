@@ -23,7 +23,7 @@ import {
   SiGooglecalendar,
 } from "react-icons/si";
 import { HiOutlineMail } from "react-icons/hi";
-import Skiper80 from "@/components/v1/Skiper80";
+import ProjectsShowcase from "@/components/v1/ProjectsShowcase";
 import { FastTrackCard } from "@/components/v1/FastTrackCard";
 import { Footer } from "@/components/v1/Footer";
 import { VerticalScrollPagination } from "@/components/v1/VerticalScrollPagination";
@@ -203,7 +203,7 @@ export default function Home() {
       </section>
 
       <section id="projects" className="min-h-screen h-auto md:h-screen w-full snap-start shrink-0">
-        <Skiper80 />
+        <ProjectsShowcase />
       </section>
 
       <section 
