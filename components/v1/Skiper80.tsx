@@ -10,6 +10,7 @@ interface Project {
   title: string;
   category?: string; // Customizable line subtitle (e.g., "Billion Dollar SaaS")
   image: string;
+  blurDataURL: string;
   description: string;
   liveUrl?: string;
   sourceUrl?: string;
@@ -22,6 +23,8 @@ const PROJECTS: Project[] = [
     category: "Voice & Form Automation",
     image:
       "https://www.chemitha.com/assets/images/thum/468409598-6ed4bda9-bd70-4deb-85f2-5f78278c54fd.webp",
+    blurDataURL:
+      "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABQAwCdASoYAA4APu1iqU2ppaQiMAgBMB2JZQCdMoAE73pfAAD+7rZdxDjWM64qJ+ItU49YY46wlxZdw2glqlXobGAAAA==",
     description:
       "An AI-powered form automation tool that allows users to fill out digital web forms simply by speaking casually. Utilizes Faster-Whisper for high-accuracy voice-to-text speech processing.",
     liveUrl: "https://autonin.onrender.com",
@@ -33,6 +36,8 @@ const PROJECTS: Project[] = [
     category: "Developer Tooling",
     image:
       "https://github.com/user-attachments/assets/29a10a9e-b219-4453-a729-84db7b042808",
+    blurDataURL:
+      "data:image/webp;base64,UklGRn4AAABXRUJQVlA4IHIAAAAQBACdASoYAA4APu1iqU2ppaOiMAgBMB2JYwDMHCHgRLJDRPFRhEVAAAD+8gRL9w0IxBc3sLTBP//IFxHhyJYoAdD+zYaOGbKg7HbWYZIHXsp4UqbfHNVdxQwYIJdpPKwvm3zptDOibSW4BVMnNouAAAA=",
     description:
       "The fastest way to launch high-converting viral waitlists, collect subscriber emails, track growth analytics, and generate pre-launch hype for startup releases.",
     liveUrl: "https://waitbee.vercel.app",
@@ -44,6 +49,8 @@ const PROJECTS: Project[] = [
     category: "AI Revenue Intelligence",
     image:
       "https://vortasky.com/images/image.jpg",
+    blurDataURL:
+      "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAABwAwCdASoYAA4APu1kqk4ppaQiMAgBMB2JZwAASnlb1tg2MaQA/vMIHsq5oUmPHxXws/m0k8aFNckWmrgryribXWROmE9hSvBwAA==",
     description:
       "A revenue intelligence platform that detects revenue leaks, identifies overdue invoices, and automatically recovers failed payments using real-time insights.",
     liveUrl: "https://vortasky.com",
@@ -54,6 +61,8 @@ const PROJECTS: Project[] = [
     category: "Cloud Workspace",
     image:
       "https://chemitha.com/assets/images/thum/atticnote.webp",
+    blurDataURL:
+      "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAABwAwCdASoYAA0APu1iqU2ppaOiMAgBMB2JZwAAW++WqozbQAAA/u8gsNC1Ifk4zozwEXwLsi+PAX0kd18q8bnodUNAAA==",
     description:
       "A lightweight web workspace designed for capturing notes, ideas, and files from anywhere. Optimized for instant access across shared computers and everyday devices.",
     liveUrl: "https://atticnote.vercel.app",
@@ -65,6 +74,8 @@ const PROJECTS: Project[] = [
     category: "Telegram Spyer",
     image:
       "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop",
+    blurDataURL:
+      "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADQAwCdASoYABAAPu1iqU2ppaOiMAgBMB2JZQCo9CHfKMrzB4AYGAAA/u6juuDxrnh50CphPZuFYhekBsMlbVwwZrMWrin9GNyFaa2lckAAAA==",
     description:
       "A Telegram bot that captures desktop screenshots remotely. Run it on your PC and send /capture via Telegram to receive an instant image of your current desktop.",
     sourceUrl: "https://github.com/chemitha/telecap-bot",
@@ -232,7 +243,12 @@ export const Skiper80: React.FC = () => {
         }`}
       >
         {!isImageLoaded && (
-          <div className="pointer-events-none absolute inset-0 z-10 bg-white/5 backdrop-blur-xl animate-pulse" />
+          <img
+            src={activeProject.blurDataURL}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+          />
         )}
         <motion.img
           key={activeProject.id}
@@ -255,7 +271,7 @@ export const Skiper80: React.FC = () => {
           }
           src={activeProject.image}
           alt={activeProject.title}
-          className="h-full w-full object-cover"
+          className="relative z-10 h-full w-full object-cover"
         />
       </motion.div>
 
