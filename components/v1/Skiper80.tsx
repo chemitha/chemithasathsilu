@@ -94,25 +94,39 @@ export const Skiper80: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const overlayRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const preloaded: HTMLImageElement[] = [];
+    let cancelled = false;
+
     PROJECTS.forEach((project) => {
       const img = new window.Image();
-      img.src = project.image;
-      if (img.complete && img.naturalWidth > 0) {
+      preloaded.push(img);
+
+      const markLoaded = () => {
+        if (cancelled) return;
         setLoadedImages((prev) =>
           prev[project.id] ? prev : { ...prev, [project.id]: true }
         );
-      } else {
-        img.onload = () => {
-          setLoadedImages((prev) =>
-            prev[project.id] ? prev : { ...prev, [project.id]: true }
-          );
-        };
+      };
+
+      img.onload = markLoaded;
+      img.src = project.image;
+
+      if (img.complete && img.naturalWidth > 0) {
+        markLoaded();
       }
     });
+
+    return () => {
+      cancelled = true;
+      preloaded.forEach((img) => {
+        img.onload = null;
+      });
+    };
   }, []);
 
   useEffect(() => {
@@ -214,6 +228,14 @@ export const Skiper80: React.FC = () => {
   const activeProject = selectedProject || hoveredProject || PROJECTS[0];
   const isImageLoaded = Boolean(loadedImages[activeProject.id]);
 
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoadedImages((prev) =>
+        prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
+      );
+    }
+  }, [activeProject.id]);
+
   return (
     <div className="relative h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] opacity-40 [background-size:20px_20px]" />
@@ -242,28 +264,15 @@ export const Skiper80: React.FC = () => {
             : "absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2"
         }`}
       >
-        {!isImageLoaded && (
-          <img
-            src={activeProject.blurDataURL}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-          />
-        )}
-        <motion.img
+        <img
+          src={activeProject.blurDataURL}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+        />
+        <img
+          ref={imgRef}
           key={activeProject.id}
-          initial={{ opacity: 0, filter: "blur(20px)", scale: 1.05 }}
-          animate={{
-            opacity: isImageLoaded ? 1 : 0,
-            filter: isImageLoaded ? "blur(0px)" : "blur(20px)",
-            scale: isImageLoaded ? 1 : 1.05,
-          }}
-          exit={{ opacity: 0 }}
-          transition={{
-            duration: 0.35,
-            ease: "easeOut",
-            delay: !selectedProject && hoveredProject?.id !== activeProject.id ? 0.12 : 0,
-          }}
           onLoad={() =>
             setLoadedImages((prev) =>
               prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
@@ -271,7 +280,9 @@ export const Skiper80: React.FC = () => {
           }
           src={activeProject.image}
           alt={activeProject.title}
-          className="relative z-10 h-full w-full object-cover"
+          className={`relative z-10 h-full w-full object-cover transition-opacity duration-300 ease-out ${
+            isImageLoaded ? "opacity-100" : "opacity-0"
+          }`}
         />
       </motion.div>
 
