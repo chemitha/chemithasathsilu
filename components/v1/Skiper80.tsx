@@ -81,9 +81,28 @@ const MORPH: Transition = {
 export const Skiper80: React.FC = () => {
   const [hoveredProject, setHoveredProject] = useState<Project>(PROJECTS[0]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const overlayRef = useRef<HTMLDivElement>(null);
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const rafIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    PROJECTS.forEach((project) => {
+      const img = new window.Image();
+      img.src = project.image;
+      if (img.complete && img.naturalWidth > 0) {
+        setLoadedImages((prev) =>
+          prev[project.id] ? prev : { ...prev, [project.id]: true }
+        );
+      } else {
+        img.onload = () => {
+          setLoadedImages((prev) =>
+            prev[project.id] ? prev : { ...prev, [project.id]: true }
+          );
+        };
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -182,6 +201,7 @@ export const Skiper80: React.FC = () => {
   };
 
   const activeProject = selectedProject || hoveredProject || PROJECTS[0];
+  const isImageLoaded = Boolean(loadedImages[activeProject.id]);
 
   return (
     <div className="relative h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black">
@@ -205,21 +225,34 @@ export const Skiper80: React.FC = () => {
       <motion.div
         layout
         transition={MORPH}
-        className={`overflow-hidden rounded-[25px] border border-white/10 shadow-2xl ${
+        className={`overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl ${
           selectedProject
             ? "fixed z-30 left-1/2 top-[31.25%] sm:top-[33%] h-56 w-[calc(100%-3rem)] max-w-lg -translate-x-1/2 sm:h-64"
             : "absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2"
         }`}
       >
+        {!isImageLoaded && (
+          <div className="pointer-events-none absolute inset-0 z-10 bg-white/5 backdrop-blur-xl animate-pulse" />
+        )}
         <motion.img
           key={activeProject.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, filter: "blur(20px)", scale: 1.05 }}
+          animate={{
+            opacity: isImageLoaded ? 1 : 0,
+            filter: isImageLoaded ? "blur(0px)" : "blur(20px)",
+            scale: isImageLoaded ? 1 : 1.05,
+          }}
           exit={{ opacity: 0 }}
           transition={{
-            duration: 0.25,
+            duration: 0.35,
+            ease: "easeOut",
             delay: !selectedProject && hoveredProject?.id !== activeProject.id ? 0.12 : 0,
           }}
+          onLoad={() =>
+            setLoadedImages((prev) =>
+              prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
+            )
+          }
           src={activeProject.image}
           alt={activeProject.title}
           className="h-full w-full object-cover"
