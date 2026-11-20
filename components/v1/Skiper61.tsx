@@ -89,6 +89,7 @@ export const SimpleGlobalCursor = () => {
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
   const opacity = useMotionValue(0);
+  const scaleSpring = useSpring(1, SPRING);
 
   const isShowcaseRoute = pathname?.startsWith('/app') || pathname?.startsWith('/showcase');
 
@@ -102,10 +103,17 @@ export const SimpleGlobalCursor = () => {
       if (opacity.get() === 0) {
         opacity.set(1);
       }
+
+      const target = e.target as HTMLElement | null;
+      const isPointerTarget = target?.closest(
+        'a, button, [role="button"], input, select, textarea, [data-cursor="pointer"], .cursor-pointer'
+      );
+      scaleSpring.set(isPointerTarget ? 2.5 : 1);
     };
 
     const handleMouseLeave = () => {
       opacity.set(0);
+      scaleSpring.set(1);
     };
 
     const handleMouseEnter = () => {
@@ -121,7 +129,7 @@ export const SimpleGlobalCursor = () => {
       document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
       document.documentElement.removeEventListener("mouseenter", handleMouseEnter);
     };
-  }, [x, y, opacity, isShowcaseRoute]);
+  }, [x, y, opacity, scaleSpring, isShowcaseRoute]);
 
   if (isShowcaseRoute) return null;
 
@@ -131,6 +139,7 @@ export const SimpleGlobalCursor = () => {
         x,
         y,
         opacity,
+        scale: scaleSpring,
       } as any}
       className="!z-99 pointer-events-none fixed top-0 left-0 z-50 hidden size-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference md:block"
     />
