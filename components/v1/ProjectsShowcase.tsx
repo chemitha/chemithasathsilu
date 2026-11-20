@@ -366,7 +366,7 @@ export const ProjectsShowcase: React.FC = () => {
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {selectedProject && (
           <div
             key={selectedProject.id}
@@ -458,7 +458,7 @@ export const ProjectsShowcase: React.FC = () => {
                     <motion.div
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: 1 }}
-                      exit={{ scaleX: 0 }}
+                      exit={{ scaleX: 0, transition: { duration: 0.12 } }}
                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       className="h-[2px] flex-1 origin-left rounded-full bg-white"
                     />
