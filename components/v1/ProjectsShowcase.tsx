@@ -3,7 +3,7 @@
 // Previously called Skiper80.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, type Transition } from "framer-motion";
-import { ExternalLink, BookOpen } from "lucide-react";
+import { ExternalLink, BookOpen, X } from "lucide-react";
 import { Tooltip } from "./Tooltip";
 
 interface Project {
@@ -251,41 +251,54 @@ export const ProjectsShowcase: React.FC = () => {
             transition={{ duration: 0.15 }}
             onMouseMove={handleOverlayMouseMove}
             onClick={handleCloseModal}
-            className="fixed inset-0 z-20 cursor-pointer bg-[#0a0a0a]/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[55] sm:z-20 [@media(max-height:460px)]:z-[55] cursor-pointer bg-[#0a0a0a]/85 backdrop-blur-sm"
           />
         )}
       </AnimatePresence>
 
-      <motion.div
-        layout
-        transition={MORPH}
-        className={`overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl ${
-          selectedProject
-            ? "fixed z-30 left-1/2 top-[22%] sm:top-[33%] h-40 sm:h-64 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] max-w-lg -translate-x-1/2"
-            : "relative sm:absolute z-10 mx-auto sm:mx-0 w-full max-w-[300px] aspect-[16/10] sm:aspect-auto sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2"
-        }`}
-      >
-        <img
-          src={activeProject.blurDataURL}
-          alt=""
+      {!selectedProject ? (
+        <motion.div
+          layoutId="shared-project-image"
+          transition={MORPH}
+          role="button"
+          tabIndex={0}
+          aria-label={`Open ${activeProject.title} details`}
+          onClick={() => setSelectedProject(activeProject)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedProject(activeProject);
+            }
+          }}
+          className="relative sm:absolute z-10 mx-auto sm:mx-0 w-full max-w-[300px] aspect-[16/10] sm:aspect-auto sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl"
+        >
+          <img
+            src={activeProject.blurDataURL}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+          />
+          <img
+            ref={imgRef}
+            key={activeProject.id}
+            onLoad={() =>
+              setLoadedImages((prev) =>
+                prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
+              )
+            }
+            src={activeProject.image}
+            alt={activeProject.title}
+            className={`relative z-10 h-full w-full object-cover transition-opacity duration-300 ease-out ${
+              isImageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        </motion.div>
+      ) : (
+        <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+          className="relative sm:absolute z-10 mx-auto sm:mx-0 w-full max-w-[300px] aspect-[16/10] sm:aspect-auto sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 opacity-0 pointer-events-none"
         />
-        <img
-          ref={imgRef}
-          key={activeProject.id}
-          onLoad={() =>
-            setLoadedImages((prev) =>
-              prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
-            )
-          }
-          src={activeProject.image}
-          alt={activeProject.title}
-          className={`relative z-10 h-full w-full object-cover transition-opacity duration-300 ease-out ${
-            isImageLoaded ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      </motion.div>
+      )}
 
       <div className="relative z-10 w-full sm:h-full sm:px-12">
         <div className="relative sm:absolute sm:bottom-[20%] sm:right-[10%] z-10 flex w-full sm:w-auto max-w-full flex-col items-end gap-1.5 sm:gap-2 sm:items-start pr-5 sm:pr-0">
@@ -343,25 +356,57 @@ export const ProjectsShowcase: React.FC = () => {
             aria-modal="true"
             data-prevent-arrow-nav="true"
             onClick={handleCloseModal}
-            className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center p-4 pt-14 sm:p-6 sm:pt-20"
+            className="pointer-events-none fixed inset-0 z-[60] sm:z-40 [@media(max-height:460px)]:z-[60] flex items-center justify-center p-4 sm:p-6 sm:pt-24 [@media(max-height:460px)]:p-3"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto mx-auto flex max-h-[90dvh] sm:max-h-[85vh] w-full max-w-lg flex-col items-center justify-start gap-3 sm:gap-5 overflow-y-auto"
+              className="pointer-events-auto mx-auto flex max-h-[92dvh] sm:max-h-[85vh] w-full max-w-lg flex-col items-center justify-start gap-3 sm:gap-5 [@media(max-height:460px)]:gap-2 overflow-y-auto sm:overflow-visible"
             >
-              <div className="flex w-full shrink-0 flex-col items-center gap-3 sm:gap-4">
-                <div className="font-cal-sans relative flex h-10 sm:h-16 items-center justify-center text-center text-2xl font-medium sm:text-5xl">
+              <div className="flex w-full shrink-0 flex-col items-center gap-3 sm:gap-4 [@media(max-height:460px)]:gap-2">
+                <div className="font-cal-sans relative flex w-full min-h-9 sm:min-h-14 [@media(max-height:460px)]:min-h-8 items-center justify-center px-8 text-center text-2xl font-medium leading-tight sm:text-5xl [@media(max-height:460px)]:text-xl">
                   <motion.h1
                     layoutId={`shared-title-${selectedProject.id}`}
                     transition={MORPH}
                     onClick={handleCloseModal}
-                    className="cursor-pointer whitespace-nowrap text-white"
+                    className="cursor-pointer whitespace-nowrap leading-tight text-white"
                   >
                     {selectedProject.title}
                   </motion.h1>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    aria-label="Close project details"
+                    className="absolute right-0 flex sm:hidden [@media(max-height:460px)]:flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
 
-                <div className="h-40 sm:h-64 w-full shrink-0 opacity-0 pointer-events-none" />
+                <motion.div
+                  layoutId="shared-project-image"
+                  transition={MORPH}
+                  className="relative h-44 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[20px] sm:rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl"
+                >
+                  <img
+                    src={selectedProject.blurDataURL}
+                    alt=""
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+                  />
+                  <img
+                    key={selectedProject.id}
+                    onLoad={() =>
+                      setLoadedImages((prev) =>
+                        prev[selectedProject.id] ? prev : { ...prev, [selectedProject.id]: true }
+                      )
+                    }
+                    src={selectedProject.image}
+                    alt={selectedProject.title}
+                    className={`relative z-10 h-full w-full object-cover transition-opacity duration-300 ease-out ${
+                      loadedImages[selectedProject.id] ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                </motion.div>
               </div>
 
               <motion.div
@@ -369,10 +414,10 @@ export const ProjectsShowcase: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ duration: 0.2 }}
-                className="flex min-h-0 w-full flex-col gap-3"
+                className="flex min-h-0 w-full flex-col gap-2.5 sm:gap-3 [@media(max-height:460px)]:gap-2"
               >
                 {/* DYNAMIC CATEGORY SUB-HEADER & DYNAMIC ADJACENT LINE */}
-                <section className="w-full shrink-0">
+                <section className="w-full shrink-0 [@media(max-height:460px)]:hidden">
                   <div className="flex items-center gap-3">
                     <h2 className="text-foreground text-base sm:text-xl font-semibold tracking-tight text-white whitespace-normal sm:whitespace-nowrap">
                       {selectedProject.category || "Billion Dollar Saas"}
@@ -388,13 +433,13 @@ export const ProjectsShowcase: React.FC = () => {
                 </section>
 
                 {/* DYNAMIC DESCRIPTION */}
-                <div className="text-foreground/50 scrollbar-thin scrollbar-thumb-zinc-700 flex max-h-[120px] flex-col gap-2 overflow-y-auto pr-2 text-xs text-zinc-400 sm:text-sm">
-                  <p className="whitespace-pre-line leading-relaxed">
+                <div className="text-foreground/50 scrollbar-thin scrollbar-thumb-zinc-700 flex max-h-[120px] [@media(max-height:460px)]:max-h-[60px] flex-col gap-2 overflow-y-auto pr-2 text-xs [@media(max-height:460px)]:text-[11px] text-zinc-400 sm:text-sm">
+                  <p className="whitespace-pre-line leading-relaxed [@media(max-height:460px)]:leading-snug">
                     {selectedProject.description}
                   </p>
                 </div>
 
-                <div className="mt-2 flex flex-wrap shrink-0 items-center gap-2.5">
+                <div className="mt-1 sm:mt-2 [@media(max-height:460px)]:mt-0.5 flex flex-wrap shrink-0 items-center gap-2 sm:gap-2.5">
                 {/* Live Preview Button */}
                 {selectedProject.liveUrl ? (
                   <Tooltip content={selectedProject.liveUrl} side="up" delay={150}>
@@ -402,20 +447,20 @@ export const ProjectsShowcase: React.FC = () => {
                     href={selectedProject.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-9 items-center gap-2 rounded-xl bg-white px-3 text-sm font-medium text-black transition-opacity hover:opacity-90"
+                    className="flex h-9 [@media(max-height:460px)]:h-8 items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-xl bg-white px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-black transition-opacity hover:opacity-90"
                   >
                     Live Preview
-                    <ExternalLink className="size-3.5" />
+                    <ExternalLink className="size-3.5 shrink-0" />
                   </a>
                   </Tooltip>
                 ) : (
                   <Tooltip content="Unavailable" side="up" delay={150}>
                   <button
                     disabled
-                    className="flex h-9 cursor-not-allowed items-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 px-3 text-sm font-medium text-white/40"
+                    className="flex h-9 [@media(max-height:460px)]:h-8 cursor-not-allowed items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-xl border-2 border-dashed border-white/20 bg-white/5 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-white/40"
                   >
                     Live Preview
-                    <ExternalLink className="size-3.5 opacity-40" />
+                    <ExternalLink className="size-3.5 shrink-0 opacity-40" />
                   </button>
                   </Tooltip>
                 )}
@@ -427,20 +472,20 @@ export const ProjectsShowcase: React.FC = () => {
                     href={selectedProject.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-zinc-800 px-3 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
+                    className="flex h-9 [@media(max-height:460px)]:h-8 items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-xl border border-white/10 bg-zinc-800 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-zinc-700"
                   >
                     See Source Code
-                    <BookOpen className="size-3.5" />
+                    <BookOpen className="size-3.5 shrink-0" />
                   </a>
                   </Tooltip>
                 ) : (
                   <Tooltip content="Unavailable" side="up" delay={150}>
                   <button
                     disabled
-                    className="flex h-9 cursor-not-allowed items-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 px-3 text-sm font-medium text-white/40"
+                    className="flex h-9 [@media(max-height:460px)]:h-8 cursor-not-allowed items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-xl border-2 border-dashed border-white/20 bg-white/5 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-white/40"
                   >
                     See Source Code
-                    <BookOpen className="size-3.5 opacity-40" />
+                    <BookOpen className="size-3.5 shrink-0 opacity-40" />
                   </button>
                   </Tooltip>
                 )}
