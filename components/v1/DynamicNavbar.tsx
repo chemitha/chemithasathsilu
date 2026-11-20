@@ -129,7 +129,7 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
         )}
       </AnimatePresence>
 
-      <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center p-4">
+      <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center p-3 sm:p-4">
         <motion.nav
           initial={false}
           animate={{
@@ -142,13 +142,13 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
           }}
           transition={{ type: "spring", stiffness: 260, damping: 28 }}
           style={{
-            padding: "12px 18px",
+            padding: "10px 16px",
             backdropFilter: "blur(40px)",
             WebkitBackdropFilter: "blur(40px)",
             borderRadius: "100px",
             borderColor: "rgba(234, 237, 240, 0.08)",
           } as React.CSSProperties}
-          className="relative flex h-[72px] w-full items-center justify-between border border-solid box-border"
+          className="relative flex h-16 sm:h-[72px] w-full items-center justify-between border border-solid box-border"
         >
           <a href="/"
           onClick={e=>{
@@ -156,7 +156,7 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
             const scrollContainer = document.querySelector(".overflow-y-scroll") || window;
             scrollContainer.scrollTo({top:0,behavior:"smooth"})
           }} className="flex items-center shrink-0">
-            <div className="flex h-13 w-13 items-center justify-center rounded-full bg-[#f1f0f5] p-2">
+            <div className="flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-[#f1f0f5] p-2">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 viewBox="0 0 325 325" 
@@ -219,14 +219,14 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
                 WebkitBackdropFilter: "blur(24px)",
                 borderColor: "rgba(234, 237, 240, 0.08)",
               } as React.CSSProperties}
-              className="w-full max-w-[1200px] mt-2 rounded-2xl p-5 border shadow-2xl flex flex-col gap-4 md:hidden z-50"
+              className="w-full max-w-[1200px] max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain mt-2 rounded-2xl p-4 sm:p-5 border shadow-2xl flex flex-col gap-2 sm:gap-4 md:hidden z-50"
             >
               {NAV_LINKS.map((link) =>
                 link.name === "Contact" ? (
                   <HighlightTrigger
                     key={link.name}
                     onBeforeTrigger={() => setIsMobileMenuOpen(false)}
-                    className="text-lg font-bold text-white/90 hover:text-white py-1 cursor-pointer"
+                    className="text-base sm:text-lg font-bold text-white/90 hover:text-white py-0.5 sm:py-1 cursor-pointer"
                   >
                     {link.name}
                   </HighlightTrigger>
@@ -235,7 +235,7 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
                     key={link.name}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-lg font-bold text-white/90 hover:text-white py-1"
+                    className="text-base sm:text-lg font-bold text-white/90 hover:text-white py-0.5 sm:py-1"
                   >
                     {link.name}
                   </a>
@@ -245,7 +245,7 @@ export const DynamicNavbar: React.FC<DynamicNavbarProps> = ({
                 <a
                   href="#services"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full text-center rounded-full bg-foreground hover:bg-[#ccc] py-3 text-base font-bold text-background shadow-md"
+                  className="w-full text-center rounded-full bg-foreground hover:bg-[#ccc] py-2.5 sm:py-3 text-sm sm:text-base font-bold text-background shadow-md"
                 >
                   Services
                 </a>

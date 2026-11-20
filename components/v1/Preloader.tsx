@@ -87,15 +87,15 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
             opacity: 0.9,
             transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
           }}
-          className="fixed inset-0 z-[9999] flex flex-col justify-between p-8 md:p-12 bg-[#090a0f] text-white selection:bg-none overflow-hidden pointer-events-auto"
+          className="fixed inset-0 z-[9999] flex flex-col justify-between p-5 sm:p-8 md:p-12 bg-[#090a0f] text-white selection:bg-none overflow-hidden pointer-events-auto"
         >
           {/* Ambient Lighting FX */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none animate-pulse" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[250px] w-[250px] rounded-full bg-white/10 blur-[80px] pointer-events-none" />
 
           {/* Top Bar: Brand & Status */}
-          <div className="relative z-10 flex items-center justify-between text-xs font-mono uppercase tracking-widest text-white/40">
-            <div className="flex items-center gap-2">
+          <div className="relative z-10 flex items-center justify-between gap-2 text-[10px] sm:text-xs font-mono uppercase tracking-wider sm:tracking-widest text-white/40">
+            <div className="flex items-center gap-2 shrink-0">
               <div className="relative flex h-8 w-8 items-center justify-center">
                 <Image 
                   src="/favicon.ico" 
@@ -108,9 +108,9 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
               <span className="hidden sm:inline-block text-white/70 font-sans font-semibold">CHEMITHA SATHSILU</span>
             </div>
             
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full text-white animate-pulse">▂</span>
-              <span>{statusText}</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="inline-block shrink-0 leading-none text-white animate-pulse">▂</span>
+              <span className="truncate">{statusText}</span>
             </div>
           </div>
 
@@ -122,7 +122,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
             </div>
 
             {/* Indeterminate Glass Bar */}
-            <div className="relative w-64 sm:w-80 h-1.5 overflow-hidden rounded-full bg-white/10 p-[1px] backdrop-blur-sm border border-white/10">
+            <div className="relative w-full max-w-64 sm:max-w-80 h-1.5 overflow-hidden rounded-full bg-white/10 p-[1px] backdrop-blur-sm border border-white/10">
               <motion.div
                 className="h-full w-1/3 rounded-full bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_15px_rgba(255,255,255,0.8)]"
                 initial={{ x: "-100%" }}
@@ -137,7 +137,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete }) => {
           </div>
 
           {/* Bottom Bar: Metadata */}
-          <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-white/30">
+          <div className="relative z-10 flex items-center justify-between gap-2 text-[10px] sm:text-[11px] font-mono text-white/30">
             <span>COLOMBO, LK</span>
             <span>PORTFOLIO © {new Date().getFullYear()}</span>
           </div>

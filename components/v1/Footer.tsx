@@ -47,7 +47,7 @@ function LiveClock() {
   }).format(now);
 
   return (
-    <span className="flex items-center gap-1.5 font-mono text-[11px] text-zinc-500 sm:text-xs">
+    <span className="flex min-w-0 max-w-full items-center gap-1.5 font-mono text-[11px] text-zinc-500 sm:text-xs">
       <span className="relative flex h-1.5 w-1.5 shrink-0">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/40" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white/60" />
@@ -64,7 +64,7 @@ export function Footer() {
     <footer className="relative w-full px-3 pb-6 pt-16 sm:px-6 sm:pt-24">
       <div className="mx-auto w-full max-w-5xl rounded-[24px] border border-white/10 bg-white/[0.02] px-5 py-8 backdrop-blur-md sm:rounded-[32px] sm:px-10 sm:py-14">
         {/* Eyebrow row */}
-        <div className="flex w-full flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+        <div className="flex min-w-0 w-full flex-wrap items-center justify-between gap-2.5 sm:gap-3">
           <span className="font-mono text-[10px] uppercase tracking-widest text-white/40 sm:text-xs">
             ~ / initialize-project
           </span>

@@ -5,11 +5,11 @@ import { Tooltip } from './Tooltip';
 
 export function FastTrackCard() {
   return (
-    <section className="py-12 sm:py-24 flex justify-center items-center px-4 bg-transparent">
-      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md p-6 sm:p-10 shadow-2xl transition-all duration-500 hover:border-white/20 hover:bg-white/[0.03]">
+    <section className="py-12 sm:py-24 flex justify-center items-center bg-transparent">
+      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md p-5 sm:p-10 shadow-2xl transition-all duration-500 hover:border-white/20 hover:bg-white/[0.03]">
         
         {/* Top Badge & Turnaround Indicator */}
-        <div className="flex flex-row sm:flex-col justify-between gap-3 pb-5 border-b border-white/10">
+        <div className="flex flex-wrap sm:flex-col sm:items-start items-center justify-between gap-2 sm:gap-3 pb-5 border-b border-white/10">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -19,7 +19,7 @@ export function FastTrackCard() {
               Fast-Track Build
             </span>
           </div>
-          <span className="self-start xs:self-auto font-mono text-[10px] xs:text-xs px-2 py-0.5 xs:px-2.5 xs:py-1 rounded-full border border-white/10 bg-white/5 text-zinc-400 whitespace-nowrap">
+          <span className="font-mono text-[10px] xs:text-xs px-2 py-0.5 xs:px-2.5 xs:py-1 rounded-full border border-white/10 bg-white/5 text-zinc-400 whitespace-nowrap">
             1–3 Day Turnaround
           </span>
         </div>

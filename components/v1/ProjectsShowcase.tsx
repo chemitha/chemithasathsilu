@@ -238,7 +238,7 @@ export const ProjectsShowcase: React.FC = () => {
   }, [activeProject.id]);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black">
+    <div className="relative min-h-screen sm:h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black flex flex-col justify-center gap-8 py-24 px-5 sm:block sm:p-0">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] opacity-40 [background-size:20px_20px]" />
 
       <AnimatePresence>
@@ -261,8 +261,8 @@ export const ProjectsShowcase: React.FC = () => {
         transition={MORPH}
         className={`overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl ${
           selectedProject
-            ? "fixed z-30 left-1/2 top-[31.25%] sm:top-[33%] h-56 w-[calc(100%-3rem)] max-w-lg -translate-x-1/2 sm:h-64"
-            : "absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2"
+            ? "fixed z-30 left-1/2 top-[22%] sm:top-[33%] h-40 sm:h-64 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] max-w-lg -translate-x-1/2"
+            : "relative sm:absolute z-10 mx-auto sm:mx-0 w-full max-w-[300px] aspect-[16/10] sm:aspect-auto sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2"
         }`}
       >
         <img
@@ -287,10 +287,10 @@ export const ProjectsShowcase: React.FC = () => {
         />
       </motion.div>
 
-      <div className="relative z-10 h-full w-full px-6 sm:px-12">
-        <div className="absolute bottom-[10%] right-6 z-10 flex max-w-full flex-col items-end gap-2 sm:bottom-[20%] sm:right-[10%] sm:items-start">
+      <div className="relative z-10 w-full sm:h-full sm:px-12">
+        <div className="relative sm:absolute sm:bottom-[20%] sm:right-[10%] z-10 flex w-full sm:w-auto max-w-full flex-col items-end gap-1.5 sm:gap-2 sm:items-start pr-5 sm:pr-0">
           <div className="flex w-full items-center gap-3 text-sm uppercase opacity-50">
-            <span className="text-sm font-medium tracking-wider text-white/90">
+            <span className="text-xs sm:text-sm font-medium tracking-wider text-white/90">
               MY PROJECTS
             </span>
             <span className="h-[1px] flex-1 bg-white" />
@@ -309,7 +309,7 @@ export const ProjectsShowcase: React.FC = () => {
                   setHoveredProject(project);
                   setSelectedProject(project);
                 }}
-                className="group relative flex w-fit cursor-pointer items-center text-3xl tracking-tighter outline-none transition-opacity duration-200 sm:text-4xl"
+                className="group relative flex w-fit cursor-pointer items-center text-2xl tracking-tighter outline-none transition-opacity duration-200 sm:text-4xl"
                 style={{ opacity: isHovered || isSelected ? 1 : 0.4 }}
               >
                 {!isSelected ? (
@@ -343,14 +343,14 @@ export const ProjectsShowcase: React.FC = () => {
             aria-modal="true"
             data-prevent-arrow-nav="true"
             onClick={handleCloseModal}
-            className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center p-6 pt-20"
+            className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center p-4 pt-14 sm:p-6 sm:pt-20"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto mx-auto flex max-h-[85vh] w-full max-w-lg flex-col items-center justify-start gap-5 overflow-hidden"
+              className="pointer-events-auto mx-auto flex max-h-[90dvh] sm:max-h-[85vh] w-full max-w-lg flex-col items-center justify-start gap-3 sm:gap-5 overflow-y-auto"
             >
-              <div className="flex w-full shrink-0 flex-col items-center gap-4">
-                <div className="font-cal-sans relative flex h-16 items-center justify-center text-center text-4xl font-medium sm:text-5xl">
+              <div className="flex w-full shrink-0 flex-col items-center gap-3 sm:gap-4">
+                <div className="font-cal-sans relative flex h-10 sm:h-16 items-center justify-center text-center text-2xl font-medium sm:text-5xl">
                   <motion.h1
                     layoutId={`shared-title-${selectedProject.id}`}
                     transition={MORPH}
@@ -361,7 +361,7 @@ export const ProjectsShowcase: React.FC = () => {
                   </motion.h1>
                 </div>
 
-                <div className="h-56 sm:h-64 w-full shrink-0 opacity-0 pointer-events-none" />
+                <div className="h-40 sm:h-64 w-full shrink-0 opacity-0 pointer-events-none" />
               </div>
 
               <motion.div
@@ -374,7 +374,7 @@ export const ProjectsShowcase: React.FC = () => {
                 {/* DYNAMIC CATEGORY SUB-HEADER & DYNAMIC ADJACENT LINE */}
                 <section className="w-full shrink-0">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-foreground text-xl font-semibold tracking-tight text-white whitespace-nowrap">
+                    <h2 className="text-foreground text-base sm:text-xl font-semibold tracking-tight text-white whitespace-normal sm:whitespace-nowrap">
                       {selectedProject.category || "Billion Dollar Saas"}
                     </h2>
                     <motion.div
@@ -394,7 +394,7 @@ export const ProjectsShowcase: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="mt-2 flex shrink-0 items-center gap-2.5">
+                <div className="mt-2 flex flex-wrap shrink-0 items-center gap-2.5">
                 {/* Live Preview Button */}
                 {selectedProject.liveUrl ? (
                   <Tooltip content={selectedProject.liveUrl} side="up" delay={150}>

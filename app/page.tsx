@@ -61,7 +61,7 @@ export default function Home() {
 
       <section 
         id="hero" 
-        className="relative flex h-[100dvh] w-full flex-col justify-end items-center pt-24 pb-16 px-4 pointer-events-none snap-start shrink-0"
+        className="relative flex h-[100dvh] w-full flex-col justify-end items-center pt-20 pb-10 sm:pt-24 sm:pb-16 px-4 pointer-events-none snap-start shrink-0"
       >
         <div
           id="navbar-trigger"
@@ -142,15 +142,15 @@ export default function Home() {
       >
         <div className="pointer-events-auto flex flex-col items-center gap-8 w-full max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8 w-full">
-            <div className="grayscale-0 md:grayscale-40 hover:grayscale-0 hover:invert-0 transition-all duration-700 ease-in-out">
+            <div className="w-full max-w-[350px] flex justify-center grayscale-0 md:grayscale-40 hover:grayscale-0 hover:invert-0 transition-all duration-700 ease-in-out">
               <TiltedCard
                 imageSrc="/me.png"
                 altText="Chemitha Sathsilu - Portrait"
                 captionText="Chemitha Sathsilu - 7PLX"
-                containerHeight="350px"
-                containerWidth="350px"
-                imageHeight="350px"
-                imageWidth="350px"
+                containerHeight="min(350px, calc(100vw - 2rem))"
+                containerWidth="min(350px, calc(100vw - 2rem))"
+                imageHeight="100%"
+                imageWidth="100%"
                 rotateAmplitude={12}
                 scaleOnHover={1.05}
                 showMobileWarning={false}
