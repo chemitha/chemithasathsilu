@@ -280,8 +280,8 @@ export const ProjectsShowcase: React.FC = () => {
               <motion.div
                 key={`blur-${activeProject.id}`}
                 initial={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-                exit={{ opacity: 0, filter: "blur(16px)", scale: 1.06 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, filter: "blur(28px)", scale: 1.12 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="pointer-events-none absolute inset-0 z-20"
               >
                 <img
@@ -290,9 +290,14 @@ export const ProjectsShowcase: React.FC = () => {
                   aria-hidden="true"
                   className="h-full w-full scale-110 object-cover blur-xl"
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/15">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1, duration: 0.25 }}
+                  className="absolute inset-0 flex items-center justify-center bg-black/15"
+                >
                   <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/75 animate-spin" />
-                </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -408,8 +413,8 @@ export const ProjectsShowcase: React.FC = () => {
                       <motion.div
                         key={`modal-blur-${selectedProject.id}`}
                         initial={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-                        exit={{ opacity: 0, filter: "blur(16px)", scale: 1.06 }}
-                        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                        exit={{ opacity: 0, filter: "blur(28px)", scale: 1.12 }}
+                        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                         className="pointer-events-none absolute inset-0 z-20"
                       >
                         <img
@@ -418,9 +423,14 @@ export const ProjectsShowcase: React.FC = () => {
                           aria-hidden="true"
                           className="h-full w-full scale-110 object-cover blur-xl"
                         />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/15">
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.85 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 1, duration: 0.25 }}
+                          className="absolute inset-0 flex items-center justify-center bg-black/15"
+                        >
                           <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/75 animate-spin" />
-                        </div>
+                        </motion.div>
                       </motion.div>
                     )}
                   </AnimatePresence>
