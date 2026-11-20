@@ -256,14 +256,18 @@ export const ProjectsShowcase: React.FC = () => {
           role="button"
           tabIndex={0}
           aria-label={`Open ${activeProject.title} details`}
-          onClick={() => setSelectedProject(activeProject)}
+          onClick={() => {
+            setHoveredProject(activeProject);
+            setSelectedProject(activeProject);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
+              setHoveredProject(activeProject);
               setSelectedProject(activeProject);
             }
           }}
-          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint]"
+          className="absolute z-20 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint]"
         >
           <img
             ref={imgRef}
@@ -309,8 +313,8 @@ export const ProjectsShowcase: React.FC = () => {
         />
       )}
 
-      <div className="relative z-10 h-full w-full px-6 sm:px-12 [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:px-0">
-        <div className="absolute bottom-[10%] right-6 z-10 flex max-w-full flex-col items-end gap-2 sm:bottom-[20%] sm:right-[10%] sm:items-start [@media(max-height:460px)]:relative [@media(max-height:460px)]:bottom-auto [@media(max-height:460px)]:right-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:pr-5">
+      <div className="pointer-events-none relative z-10 h-full w-full px-6 sm:px-12 [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:px-0">
+        <div className="pointer-events-auto absolute bottom-[10%] right-6 z-10 flex max-w-full flex-col items-end gap-2 sm:bottom-[20%] sm:right-[10%] sm:items-start [@media(max-height:460px)]:relative [@media(max-height:460px)]:bottom-auto [@media(max-height:460px)]:right-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:pr-5">
           <div className="flex w-full items-center gap-3 text-sm uppercase opacity-50">
             <span className="text-sm font-medium tracking-wider text-white/90 [@media(max-height:460px)]:text-xs">
               MY PROJECTS
