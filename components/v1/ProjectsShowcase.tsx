@@ -282,15 +282,17 @@ export const ProjectsShowcase: React.FC = () => {
             }
             src={activeProject.image}
             alt={activeProject.title}
-            className="relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden]"
+            className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] transition-opacity duration-300 ease-out ${
+              isImageLoaded ? "opacity-100" : "opacity-0"
+            }`}
           />
           <AnimatePresence>
             {!isImageLoaded && (
               <motion.div
                 key={`blur-${activeProject.id}`}
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                initial={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                exit={{ opacity: 0, filter: "blur(16px)", scale: 1.06 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 className="pointer-events-none absolute inset-0 z-20"
               >
                 <img
@@ -299,8 +301,8 @@ export const ProjectsShowcase: React.FC = () => {
                   aria-hidden="true"
                   className="h-full w-full scale-110 object-cover blur-xl"
                 />
-                <div className="absolute bottom-3 right-3 flex items-center justify-center">
-                  <span className="h-3.5 w-3.5 rounded-full border-[1.5px] border-white/15 border-t-white/60 animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/15">
+                  <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/75 animate-spin" />
                 </div>
               </motion.div>
             )}
@@ -409,15 +411,17 @@ export const ProjectsShowcase: React.FC = () => {
                     }
                     src={selectedProject.image}
                     alt={selectedProject.title}
-                    className="relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] will-change-transform"
+                    className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] will-change-transform transition-opacity duration-300 ease-out ${
+                      loadedImages[selectedProject.id] ? "opacity-100" : "opacity-0"
+                    }`}
                   />
                   <AnimatePresence>
                     {!loadedImages[selectedProject.id] && (
                       <motion.div
                         key={`modal-blur-${selectedProject.id}`}
-                        initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        initial={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+                        exit={{ opacity: 0, filter: "blur(16px)", scale: 1.06 }}
+                        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                         className="pointer-events-none absolute inset-0 z-20"
                       >
                         <img
@@ -426,8 +430,8 @@ export const ProjectsShowcase: React.FC = () => {
                           aria-hidden="true"
                           className="h-full w-full scale-110 object-cover blur-xl"
                         />
-                        <div className="absolute bottom-3 right-3 flex items-center justify-center">
-                          <span className="h-3.5 w-3.5 rounded-full border-[1.5px] border-white/15 border-t-white/60 animate-spin" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/15">
+                          <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/75 animate-spin" />
                         </div>
                       </motion.div>
                     )}
