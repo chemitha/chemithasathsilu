@@ -251,7 +251,7 @@ export const ProjectsShowcase: React.FC = () => {
             transition={{ duration: 0.15 }}
             onMouseMove={handleOverlayMouseMove}
             onClick={handleCloseModal}
-            className="fixed inset-0 z-[55] sm:z-20 [@media(max-height:460px)]:z-[55] cursor-pointer bg-[#0a0a0a]/85 backdrop-blur-sm"
+            className="fixed inset-0 z-20 [@media(max-height:460px)]:z-[55] cursor-pointer bg-[#0a0a0a]/80 backdrop-blur-sm"
           />
         )}
       </AnimatePresence>
@@ -356,14 +356,14 @@ export const ProjectsShowcase: React.FC = () => {
             aria-modal="true"
             data-prevent-arrow-nav="true"
             onClick={handleCloseModal}
-            className="pointer-events-none fixed inset-0 z-[60] sm:z-40 [@media(max-height:460px)]:z-[60] flex items-center justify-center p-4 sm:p-6 sm:pt-24 [@media(max-height:460px)]:p-3"
+            className="pointer-events-none fixed inset-0 z-40 [@media(max-height:460px)]:z-[60] flex items-center justify-center p-6 pt-20 [@media(max-height:460px)]:p-3"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto mx-auto flex max-h-[92dvh] sm:max-h-[85vh] w-full max-w-lg flex-col items-center justify-start gap-3 sm:gap-5 [@media(max-height:460px)]:gap-2 overflow-y-auto sm:overflow-visible"
+              className="pointer-events-auto mx-auto flex max-h-[85vh] [@media(max-height:460px)]:max-h-[92dvh] w-full max-w-lg flex-col items-center justify-start gap-5 [@media(max-height:460px)]:gap-2 overflow-hidden [@media(max-height:460px)]:overflow-y-auto"
             >
-              <div className="flex w-full shrink-0 flex-col items-center gap-3 sm:gap-4 [@media(max-height:460px)]:gap-2">
-                <div className="font-cal-sans relative flex w-full min-h-9 sm:min-h-14 [@media(max-height:460px)]:min-h-8 items-center justify-center px-8 text-center text-2xl font-medium leading-tight sm:text-5xl [@media(max-height:460px)]:text-xl">
+              <div className="flex w-full shrink-0 flex-col items-center gap-4 [@media(max-height:460px)]:gap-2">
+                <div className="font-cal-sans relative flex w-full min-h-12 sm:min-h-16 [@media(max-height:460px)]:min-h-8 items-center justify-center text-center text-4xl font-medium leading-tight sm:text-5xl [@media(max-height:460px)]:text-xl">
                   <motion.h1
                     layoutId={`shared-title-${selectedProject.id}`}
                     transition={MORPH}
@@ -376,7 +376,7 @@ export const ProjectsShowcase: React.FC = () => {
                     type="button"
                     onClick={handleCloseModal}
                     aria-label="Close project details"
-                    className="absolute right-0 flex sm:hidden [@media(max-height:460px)]:flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
+                    className="absolute right-0 hidden [@media(max-height:460px)]:flex h-7 w-7 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
                   >
                     <X className="size-4" />
                   </button>
@@ -385,7 +385,7 @@ export const ProjectsShowcase: React.FC = () => {
                 <motion.div
                   layoutId="shared-project-image"
                   transition={MORPH}
-                  className="relative h-44 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[20px] sm:rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl"
+                  className="relative h-56 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl"
                 >
                   <img
                     src={selectedProject.blurDataURL}
