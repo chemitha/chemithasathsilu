@@ -238,7 +238,7 @@ export const ProjectsShowcase: React.FC = () => {
   }, [activeProject.id]);
 
   return (
-    <div className="relative min-h-screen sm:h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black flex flex-col justify-center gap-8 py-24 px-5 sm:block sm:p-0">
+    <div className="relative h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black [@media(max-height:460px)]:min-h-screen [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:flex [@media(max-height:460px)]:flex-col [@media(max-height:460px)]:justify-center [@media(max-height:460px)]:gap-6 [@media(max-height:460px)]:py-20 [@media(max-height:460px)]:px-5">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] opacity-40 [background-size:20px_20px]" />
 
       <AnimatePresence>
@@ -270,7 +270,7 @@ export const ProjectsShowcase: React.FC = () => {
               setSelectedProject(activeProject);
             }
           }}
-          className="relative sm:absolute z-10 mx-auto sm:mx-0 w-full max-w-[300px] aspect-[16/10] sm:aspect-auto sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl"
+          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl"
         >
           <img
             src={activeProject.blurDataURL}
@@ -296,14 +296,14 @@ export const ProjectsShowcase: React.FC = () => {
       ) : (
         <div
           aria-hidden="true"
-          className="relative sm:absolute z-10 mx-auto sm:mx-0 w-full max-w-[300px] aspect-[16/10] sm:aspect-auto sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 opacity-0 pointer-events-none"
+          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] opacity-0 pointer-events-none"
         />
       )}
 
-      <div className="relative z-10 w-full sm:h-full sm:px-12">
-        <div className="relative sm:absolute sm:bottom-[20%] sm:right-[10%] z-10 flex w-full sm:w-auto max-w-full flex-col items-end gap-1.5 sm:gap-2 sm:items-start pr-5 sm:pr-0">
+      <div className="relative z-10 h-full w-full px-6 sm:px-12 [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:px-0">
+        <div className="absolute bottom-[10%] right-6 z-10 flex max-w-full flex-col items-end gap-2 sm:bottom-[20%] sm:right-[10%] sm:items-start [@media(max-height:460px)]:relative [@media(max-height:460px)]:bottom-auto [@media(max-height:460px)]:right-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:pr-5">
           <div className="flex w-full items-center gap-3 text-sm uppercase opacity-50">
-            <span className="text-xs sm:text-sm font-medium tracking-wider text-white/90">
+            <span className="text-sm font-medium tracking-wider text-white/90 [@media(max-height:460px)]:text-xs">
               MY PROJECTS
             </span>
             <span className="h-[1px] flex-1 bg-white" />
