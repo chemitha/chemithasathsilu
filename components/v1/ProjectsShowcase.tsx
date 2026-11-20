@@ -335,7 +335,7 @@ export const ProjectsShowcase: React.FC = () => {
                   setHoveredProject(project);
                   setSelectedProject(project);
                 }}
-                className="group relative flex w-fit cursor-pointer items-center text-2xl tracking-tighter outline-none transition-opacity duration-200 sm:text-4xl"
+                className="group relative flex w-fit cursor-pointer items-center text-3xl tracking-tighter outline-none transition-opacity duration-200 sm:text-4xl [@media(max-height:460px)]:text-2xl"
                 style={{ opacity: isHovered || isSelected ? 1 : 0.4 }}
               >
                 {!isSelected ? (
