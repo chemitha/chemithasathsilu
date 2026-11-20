@@ -263,7 +263,7 @@ export const ProjectsShowcase: React.FC = () => {
               setSelectedProject(activeProject);
             }
           }}
-          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint]"
+          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl"
         >
           <img
             ref={imgRef}
@@ -271,7 +271,7 @@ export const ProjectsShowcase: React.FC = () => {
             onLoad={() => setPreviewLoadedId(activeProject.id)}
             src={activeProject.image}
             alt={activeProject.title}
-            className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] transition-opacity duration-300 ease-out ${
+            className={`relative z-10 h-full w-full object-cover ${
               isImageLoaded ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -391,7 +391,7 @@ export const ProjectsShowcase: React.FC = () => {
                 <motion.div
                   layoutId="shared-project-image"
                   transition={MORPH}
-                  className="relative h-56 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint] [backface-visibility:hidden]"
+                  className="relative h-56 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl"
                 >
                   <img
                     ref={modalImgRef}
@@ -399,7 +399,7 @@ export const ProjectsShowcase: React.FC = () => {
                     onLoad={() => setModalLoadedId(selectedProject.id)}
                     src={selectedProject.image}
                     alt={selectedProject.title}
-                    className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] will-change-transform transition-opacity duration-300 ease-out ${
+                    className={`relative z-10 h-full w-full object-cover ${
                       isModalImageLoaded ? "opacity-100" : "opacity-0"
                     }`}
                   />
