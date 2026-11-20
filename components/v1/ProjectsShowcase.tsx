@@ -1,7 +1,7 @@
 "use client";
 
 // Previously called Skiper80.tsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, LayoutGroup, type Transition } from "framer-motion";
 import { ExternalLink, BookOpen, X } from "lucide-react";
 import { Tooltip } from "./Tooltip";
@@ -93,41 +93,19 @@ const MORPH: Transition = {
 export const ProjectsShowcase: React.FC = () => {
   const [hoveredProject, setHoveredProject] = useState<Project>(PROJECTS[0]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+  const [previewLoadedId, setPreviewLoadedId] = useState<string | null>(null);
+  const [modalLoadedId, setModalLoadedId] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const modalImgRef = useRef<HTMLImageElement>(null);
   const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const preloaded: HTMLImageElement[] = [];
-    let cancelled = false;
-
     PROJECTS.forEach((project) => {
       const img = new window.Image();
-      preloaded.push(img);
-
-      const markLoaded = () => {
-        if (cancelled) return;
-        setLoadedImages((prev) =>
-          prev[project.id] ? prev : { ...prev, [project.id]: true }
-        );
-      };
-
-      img.onload = markLoaded;
       img.src = project.image;
-
-      if (img.complete && img.naturalWidth > 0) {
-        markLoaded();
-      }
     });
-
-    return () => {
-      cancelled = true;
-      preloaded.forEach((img) => {
-        img.onload = null;
-      });
-    };
   }, []);
 
   useEffect(() => {
@@ -227,15 +205,29 @@ export const ProjectsShowcase: React.FC = () => {
   };
 
   const activeProject = selectedProject || hoveredProject || PROJECTS[0];
-  const isImageLoaded = Boolean(loadedImages[activeProject.id]);
+  const isImageLoaded = previewLoadedId === activeProject.id;
+  const isModalImageLoaded = Boolean(selectedProject && modalLoadedId === selectedProject.id);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (selectedProject) return;
     if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
-      setLoadedImages((prev) =>
-        prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
-      );
+      setPreviewLoadedId(activeProject.id);
+    } else {
+      setPreviewLoadedId(null);
     }
-  }, [activeProject.id]);
+  }, [activeProject.id, selectedProject]);
+
+  useLayoutEffect(() => {
+    if (!selectedProject) {
+      setModalLoadedId(null);
+      return;
+    }
+    if (modalImgRef.current?.complete && modalImgRef.current.naturalWidth > 0) {
+      setModalLoadedId(selectedProject.id);
+    } else {
+      setModalLoadedId(null);
+    }
+  }, [selectedProject?.id]);
 
   return (
     <LayoutGroup>
@@ -276,11 +268,7 @@ export const ProjectsShowcase: React.FC = () => {
           <img
             ref={imgRef}
             key={activeProject.id}
-            onLoad={() =>
-              setLoadedImages((prev) =>
-                prev[activeProject.id] ? prev : { ...prev, [activeProject.id]: true }
-              )
-            }
+            onLoad={() => setPreviewLoadedId(activeProject.id)}
             src={activeProject.image}
             alt={activeProject.title}
             className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] transition-opacity duration-300 ease-out ${
@@ -406,20 +394,17 @@ export const ProjectsShowcase: React.FC = () => {
                   className="relative h-56 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint] [backface-visibility:hidden]"
                 >
                   <img
+                    ref={modalImgRef}
                     key={selectedProject.id}
-                    onLoad={() =>
-                      setLoadedImages((prev) =>
-                        prev[selectedProject.id] ? prev : { ...prev, [selectedProject.id]: true }
-                      )
-                    }
+                    onLoad={() => setModalLoadedId(selectedProject.id)}
                     src={selectedProject.image}
                     alt={selectedProject.title}
                     className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] will-change-transform transition-opacity duration-300 ease-out ${
-                      loadedImages[selectedProject.id] ? "opacity-100" : "opacity-0"
+                      isModalImageLoaded ? "opacity-100" : "opacity-0"
                     }`}
                   />
                   <AnimatePresence>
-                    {!loadedImages[selectedProject.id] && (
+                    {!isModalImageLoaded && (
                       <motion.div
                         key={`modal-blur-${selectedProject.id}`}
                         initial={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
