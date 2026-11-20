@@ -270,14 +270,16 @@ export const ProjectsShowcase: React.FC = () => {
               setSelectedProject(activeProject);
             }
           }}
-          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl"
+          className="absolute z-10 -left-12 top-[12%] h-48 w-72 sm:left-[15%] sm:top-[20%] sm:h-52 sm:w-88 sm:-translate-x-1/2 [@media(max-height:460px)]:relative [@media(max-height:460px)]:left-auto [@media(max-height:460px)]:top-auto [@media(max-height:460px)]:mx-auto [@media(max-height:460px)]:w-full [@media(max-height:460px)]:max-w-[280px] [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:aspect-[16/10] cursor-pointer overflow-hidden rounded-[25px] border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint]"
         >
-          <img
-            src={activeProject.blurDataURL}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-          />
+          {!isImageLoaded && (
+            <img
+              src={activeProject.blurDataURL}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+            />
+          )}
           <img
             ref={imgRef}
             key={activeProject.id}
@@ -288,7 +290,7 @@ export const ProjectsShowcase: React.FC = () => {
             }
             src={activeProject.image}
             alt={activeProject.title}
-            className={`relative z-10 h-full w-full object-cover transition-opacity duration-300 ease-out ${
+            className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] transition-opacity duration-300 ease-out ${
               isImageLoaded ? "opacity-100" : "opacity-0"
             }`}
           />
@@ -360,10 +362,10 @@ export const ProjectsShowcase: React.FC = () => {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="pointer-events-auto mx-auto flex max-h-[85vh] [@media(max-height:460px)]:max-h-[92dvh] w-full max-w-lg flex-col items-center justify-start gap-5 [@media(max-height:460px)]:gap-2 overflow-hidden [@media(max-height:460px)]:overflow-y-auto"
+              className="pointer-events-auto isolate mx-auto flex max-h-[85vh] [@media(max-height:460px)]:max-h-[92dvh] w-full max-w-lg flex-col items-center justify-start gap-5 [@media(max-height:460px)]:gap-2 overflow-hidden [@media(max-height:460px)]:overflow-y-auto"
             >
               <div className="flex w-full shrink-0 flex-col items-center gap-4 [@media(max-height:460px)]:gap-2">
-                <div className="font-cal-sans relative flex w-full min-h-12 sm:min-h-16 [@media(max-height:460px)]:min-h-8 items-center justify-center text-center text-4xl font-medium leading-tight sm:text-5xl [@media(max-height:460px)]:text-xl">
+                <div className="font-cal-sans relative flex w-full min-h-12 sm:min-h-16 [@media(max-height:460px)]:min-h-8 items-center justify-center text-center text-4xl font-medium leading-tight sm:text-5xl [@media(max-height:460px)]:text-xl transform-gpu">
                   <motion.h1
                     layoutId={`shared-title-${selectedProject.id}`}
                     transition={MORPH}
@@ -385,14 +387,16 @@ export const ProjectsShowcase: React.FC = () => {
                 <motion.div
                   layoutId="shared-project-image"
                   transition={MORPH}
-                  className="relative h-56 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl"
+                  className="relative h-56 sm:h-64 [@media(max-height:460px)]:h-24 w-full shrink-0 overflow-hidden rounded-[25px] [@media(max-height:460px)]:rounded-2xl border border-white/10 bg-zinc-900/50 shadow-2xl transform-gpu [contain:layout_paint] [backface-visibility:hidden]"
                 >
-                  <img
-                    src={selectedProject.blurDataURL}
-                    alt=""
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-                  />
+                  {!loadedImages[selectedProject.id] && (
+                    <img
+                      src={selectedProject.blurDataURL}
+                      alt=""
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+                    />
+                  )}
                   <img
                     key={selectedProject.id}
                     onLoad={() =>
@@ -402,7 +406,7 @@ export const ProjectsShowcase: React.FC = () => {
                     }
                     src={selectedProject.image}
                     alt={selectedProject.title}
-                    className={`relative z-10 h-full w-full object-cover transition-opacity duration-300 ease-out ${
+                    className={`relative z-10 h-full w-full object-cover transform-gpu [backface-visibility:hidden] will-change-transform transition-opacity duration-300 ease-out ${
                       loadedImages[selectedProject.id] ? "opacity-100" : "opacity-0"
                     }`}
                   />
@@ -414,7 +418,7 @@ export const ProjectsShowcase: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ duration: 0.2 }}
-                className="flex min-h-0 w-full flex-col gap-2.5 sm:gap-3 [@media(max-height:460px)]:gap-2"
+                className="flex min-h-0 w-full flex-col gap-2.5 sm:gap-3 [@media(max-height:460px)]:gap-2 transform-gpu [backface-visibility:hidden]"
               >
                 {/* DYNAMIC CATEGORY SUB-HEADER & DYNAMIC ADJACENT LINE */}
                 <section className="w-full shrink-0 [@media(max-height:460px)]:hidden">
