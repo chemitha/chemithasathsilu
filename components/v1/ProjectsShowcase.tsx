@@ -2,7 +2,7 @@
 
 // Previously called Skiper80.tsx
 import React, { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence, type Transition } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup, type Transition } from "framer-motion";
 import { ExternalLink, BookOpen, X } from "lucide-react";
 import { Tooltip } from "./Tooltip";
 
@@ -238,6 +238,7 @@ export const ProjectsShowcase: React.FC = () => {
   }, [activeProject.id]);
 
   return (
+    <LayoutGroup>
     <div className="relative h-screen w-full overflow-hidden font-sans text-white selection:bg-white selection:text-black [@media(max-height:460px)]:min-h-screen [@media(max-height:460px)]:h-auto [@media(max-height:460px)]:flex [@media(max-height:460px)]:flex-col [@media(max-height:460px)]:justify-center [@media(max-height:460px)]:gap-6 [@media(max-height:460px)]:py-20 [@media(max-height:460px)]:px-5">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1f1f1f_1px,transparent_1px)] opacity-40 [background-size:20px_20px]" />
 
@@ -343,6 +344,7 @@ export const ProjectsShowcase: React.FC = () => {
                 {!isSelected ? (
                   <motion.span
                     layoutId={`shared-title-${project.id}`}
+                    layoutDependency={selectedProject?.id ?? null}
                     transition={MORPH}
                     className="relative flex items-center"
                   >
@@ -364,9 +366,10 @@ export const ProjectsShowcase: React.FC = () => {
         </div>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {selectedProject && (
           <div
+            key={selectedProject.id}
             role="dialog"
             aria-modal="true"
             data-prevent-arrow-nav="true"
@@ -526,6 +529,7 @@ export const ProjectsShowcase: React.FC = () => {
         )}
       </AnimatePresence>
     </div>
+    </LayoutGroup>
   );
 };
 
